@@ -2,7 +2,7 @@
 import { useEffect, useMemo, useState } from "react";
 import type { FormEvent } from "react";
 import {
-  BookOpen, CalendarDays, ChartNoAxesCombined, CircleHelp,
+  BookOpen, CalendarDays, ChartNoAxesCombined,
   Clock3, GraduationCap, LogIn, LogOut, Menu, Search,
   ShieldCheck, Video, X, MapPin, ArrowRight, CheckCircle2,
   PlayCircle, Plus, Target
@@ -10,17 +10,33 @@ import {
 import { isSupabaseConfigured, supabase } from "./lib/supabase";
 
 type Contest = {
-  id: string; title: string; state: string | null;
-  city: string | null; level: string | null; status: string;
-  deadline: string | null; official_url: string | null;
+  id: string;
+  title: string;
+  state: string | null;
+  city: string | null;
+  level: string | null;
+  status: string;
+  deadline: string | null;
+  official_url: string | null;
 };
-type Subject = { id: string; name: string };
+
+type Subject = {
+  id: string;
+  name: string;
+};
+
 type StudySession = {
-  id: string; duration_minutes: number; studied_at: string;
-  notes: string | null; subject_id: string | null;
+  id: string;
+  duration_minutes: number;
+  studied_at: string;
+  notes: string | null;
+  subject_id: string | null;
 };
+
 type Lesson = {
-  id: string; title: string; youtube_video_id: string;
+  id: string;
+  title: string;
+  youtube_video_id: string;
   channel_name: string | null;
 };
 
@@ -33,9 +49,9 @@ const navigation = [
 ] as const;
 
 const states = [
-  "Todos os estados","AC","AL","AP","AM","BA","CE","DF","ES","GO",
-  "MA","MT","MS","MG","PA","PB","PR","PE","PI","RJ","RN","RS",
-  "RO","RR","SC","SP","SE","TO"
+  "Todos os estados", "AC", "AL", "AP", "AM", "BA", "CE", "DF",
+  "ES", "GO", "MA", "MT", "MS", "MG", "PA", "PB", "PR", "PE",
+  "PI", "RJ", "RN", "RS", "RO", "RR", "SC", "SP", "SE", "TO"
 ];
 
 export default function App() {
@@ -64,18 +80,25 @@ export default function App() {
       supabase.from("contests")
         .select("id,title,state,city,level,status,deadline,official_url")
         .in("status", ["open", "upcoming"])
-        .order("deadline", { ascending: true }).limit(100),
+        .order("deadline", { ascending: true })
+        .limit(100),
+
       supabase.from("subjects")
-        .select("id,name").order("name"),
+        .select("id,name")
+        .order("name"),
+
       supabase.from("video_lessons")
         .select("id,title,youtube_video_id,channel_name")
         .eq("is_published", true)
-        .order("created_at", { ascending: false }).limit(100),
+        .order("created_at", { ascending: false })
+        .limit(100),
+
       userId
         ? supabase.from("study_sessions")
             .select("id,duration_minutes,studied_at,notes,subject_id")
             .eq("user_id", userId)
-            .order("studied_at", { ascending: false }).limit(100)
+            .order("studied_at", { ascending: false })
+            .limit(100)
         : Promise.resolve({ data: [] })
     ]);
 
@@ -90,13 +113,19 @@ export default function App() {
 
     supabase.auth.getSession().then(({ data }) => {
       setSession(data.session);
-      if (data.session) void refresh(data.session.user.id);
+      if (data.session) {
+        void refresh(data.session.user.id);
+      }
     });
 
     const { data } = supabase.auth.onAuthStateChange((_event, next) => {
       setSession(next);
-      if (next) void refresh(next.user.id);
-      else setSessions([]);
+
+      if (next) {
+        void refresh(next.user.id);
+      } else {
+        setSessions([]);
+      }
     });
 
     return () => data.subscription.unsubscribe();
@@ -131,9 +160,11 @@ export default function App() {
 
   async function addStudySession(e: FormEvent) {
     e.preventDefault();
+
     if (!supabase || !session) return;
 
     const duration = Number(minutes);
+
     if (!Number.isFinite(duration) || duration < 1) {
       setMessage("Informe uma duração válida.");
       return;
@@ -159,40 +190,57 @@ export default function App() {
   const filteredContests = useMemo(() =>
     contests.filter(c =>
       `${c.title} ${c.city ?? ""} ${c.state ?? ""} ${c.level ?? ""}`
-        .toLowerCase().includes(search.toLowerCase()) &&
+        .toLowerCase()
+        .includes(search.toLowerCase()) &&
       (stateFilter === "Todos os estados" || c.state === stateFilter)
     ), [contests, search, stateFilter]);
 
   const totalMinutes = sessions.reduce(
-    (sum, item) => sum + item.duration_minutes, 0
+    (sum, item) => sum + item.duration_minutes,
+    0
   );
+
   const hours = Math.floor(totalMinutes / 60);
   const remainingMinutes = totalMinutes % 60;
 
   return (
     <div className="app-shell">
       <header className="topbar">
-        <button className="menu-button"
-          onClick={() => setMobile(!mobile)} aria-label="Menu">
+        <button
+          className="menu-button"
+          onClick={() => setMobile(!mobile)}
+          aria-label="Menu"
+        >
           {mobile ? <X /> : <Menu />}
         </button>
 
         <button className="brand" onClick={() => navigate("home")}>
-          <span className="brand-mark">A<span>✓</span></span>
-          <span>APROVEI<small>SUA APROVAÇÃO COMEÇA AQUI</small></span>
+          <span className="brand-mark">
+            A<span>✓</span>
+          </span>
+          <span>
+            APROVEI
+            <small>SUA APROVAÇÃO COMEÇA AQUI</small>
+          </span>
         </button>
 
         <div className="top-actions">
           {session ? (
             <>
               <span className="user-email">{session.user.email}</span>
-              <button className="icon-button"
-                onClick={() => supabase?.auth.signOut()} title="Sair">
+              <button
+                className="icon-button"
+                onClick={() => supabase?.auth.signOut()}
+                title="Sair"
+              >
                 <LogOut size={18} />
               </button>
             </>
           ) : (
-            <button className="login-link" onClick={() => navigate("account")}>
+            <button
+              className="login-link"
+              onClick={() => navigate("account")}
+            >
               <LogIn size={17} /> Entrar
             </button>
           )}
@@ -202,10 +250,13 @@ export default function App() {
       <div className="layout">
         <aside className={`sidebar ${mobile ? "open" : ""}`}>
           <div className="side-label">ÁREA DO ALUNO</div>
+
           {navigation.map(([label, key]) => (
-            <button key={key}
+            <button
+              key={key}
               className={`nav-item ${page === key ? "active" : ""}`}
-              onClick={() => navigate(key)}>
+              onClick={() => navigate(key)}
+            >
               {key === "home" ? <ChartNoAxesCombined /> :
                key === "contests" ? <Search /> :
                key === "planner" ? <CalendarDays /> :
@@ -213,9 +264,14 @@ export default function App() {
               {label}
             </button>
           ))}
+
           <div className="sidebar-bottom">
             <ShieldCheck />
-            <span>Estude com estratégia.<br /><b>Conquiste sua aprovação.</b></span>
+            <span>
+              Estude com estratégia.
+              <br />
+              <b>Conquiste sua aprovação.</b>
+            </span>
           </div>
         </aside>
 
@@ -224,68 +280,137 @@ export default function App() {
             <>
               <section className="hero">
                 <div className="hero-copy">
-                  <span className="eyebrow">SUA JORNADA COMEÇA AGORA</span>
-                  <h1>Seu próximo cargo público começa com <em>APROVEI.</em></h1>
-                  <p>Organize seus estudos, acompanhe editais e transforme sua preparação em resultados.</p>
+                  <span className="eyebrow">
+                    SUA JORNADA COMEÇA AGORA
+                  </span>
+
+                  <h1>
+                    Seu próximo cargo público começa com <em>APROVEI.</em>
+                  </h1>
+
+                  <p>
+                    Organize seus estudos, acompanhe editais e transforme
+                    sua preparação em resultados.
+                  </p>
+
                   <div className="hero-actions">
-                    <button className="primary"
-                      onClick={() => navigate(session ? "planner" : "account")}>
-                      {session ? "Registrar meus estudos" : "Começar gratuitamente"}
+                    <button
+                      className="primary"
+                      onClick={() => navigate(session ? "planner" : "account")}
+                    >
+                      {session
+                        ? "Registrar meus estudos"
+                        : "Começar gratuitamente"}
                       <ArrowRight size={17} />
                     </button>
-                    <button className="secondary"
-                      onClick={() => navigate("contests")}>
+
+                    <button
+                      className="secondary"
+                      onClick={() => navigate("contests")}
+                    >
                       Ver concursos abertos
                     </button>
                   </div>
+
                   <div className="hero-proof">
                     <span><CheckCircle2 /> Planejamento</span>
                     <span><CheckCircle2 /> Editais</span>
                     <span><CheckCircle2 /> Videoaulas</span>
                   </div>
                 </div>
+
                 <div className="hero-visual">
                   <div className="orbit orbit-one" />
                   <div className="orbit orbit-two" />
-                  <div className="hero-badge"><GraduationCap size={45} /></div>
-                  <div className="floating-card card-top">
-                    <span>FOCO</span><b>Disciplina diária</b>
+                  <div className="hero-badge">
+                    <GraduationCap size={45} />
                   </div>
+
+                  <div className="floating-card card-top">
+                    <span>FOCO</span>
+                    <b>Disciplina diária</b>
+                  </div>
+
                   <div className="floating-card card-bottom">
-                    <span>PROGRESSO</span><b>Um passo por vez ✓</b>
+                    <span>PROGRESSO</span>
+                    <b>Um passo por vez ✓</b>
                   </div>
                 </div>
               </section>
 
               <div className="metric-grid">
-                <Metric icon={<Clock3 />}
+                <Metric
+                  icon={<Clock3 />}
                   value={session ? `${hours}h ${remainingMinutes}min` : "—"}
-                  label="Tempo registrado" />
-                <Metric icon={<BookOpen />} value={String(sessions.length)}
-                  label="Sessões de estudo" />
-                <Metric icon={<Target />} value={String(contests.length)}
-                  label="Editais disponíveis" />
+                  label="Tempo registrado"
+                />
+
+                <Metric
+                  icon={<BookOpen />}
+                  value={String(sessions.length)}
+                  label="Sessões de estudo"
+                />
+
+                <Metric
+                  icon={<Target />}
+                  value={String(contests.length)}
+                  label="Editais disponíveis"
+                />
               </div>
 
               <section className="feature-grid">
-                <Feature icon={<Search />} title="Concursos em todo o Brasil"
-                  text="Pesquise oportunidades por estado, município e escolaridade." />
-                <Feature icon={<CalendarDays />} title="Planejamento de estudos"
-                  text="Registre sessões e acompanhe seu tempo dedicado." />
-                <Feature icon={<Video />} title="Videoaulas organizadas"
-                  text="Acesse aulas públicas do YouTube por assunto." />
-                <Feature icon={<ChartNoAxesCombined />} title="Acompanhe sua evolução"
-                  text="Visualize sua rotina e mantenha o foco." />
+                <Feature
+                  icon={<Search />}
+                  title="Concursos em todo o Brasil"
+                  text="Pesquise oportunidades por estado, município e escolaridade."
+                />
+
+                <Feature
+                  icon={<CalendarDays />}
+                  title="Planejamento de estudos"
+                  text="Registre sessões e acompanhe seu tempo dedicado."
+                />
+
+                <Feature
+                  icon={<Video />}
+                  title="Videoaulas organizadas"
+                  text="Acesse aulas públicas do YouTube por assunto."
+                />
+
+                <Feature
+                  icon={<ChartNoAxesCombined />}
+                  title="Acompanhe sua evolução"
+                  text="Visualize sua rotina e mantenha o foco."
+                />
               </section>
 
               <section className="plans">
                 <span className="eyebrow">PLANOS APROVEI</span>
                 <h2>Escolha seu ritmo de preparação</h2>
-                <p>Valores da proposta inicial. A cobrança ainda será integrada ao Mercado Pago.</p>
+                <p>
+                  Valores da proposta inicial. A cobrança ainda será
+                  integrada ao Mercado Pago.
+                </p>
+
                 <div className="plan-grid">
-                  <Plan name="Essencial" price="14,90" desc="Para organizar sua rotina." />
-                  <Plan name="Avançado" price="24,90" desc="Para aprofundar a preparação." featured />
-                  <Plan name="Aprovação" price="39,90" desc="Para uma experiência completa." />
+                  <Plan
+                    name="Essencial"
+                    price="14,90"
+                    desc="Para organizar sua rotina."
+                  />
+
+                  <Plan
+                    name="Avançado"
+                    price="24,90"
+                    desc="Para aprofundar a preparação."
+                    featured
+                  />
+
+                  <Plan
+                    name="Aprovação"
+                    price="39,90"
+                    desc="Para uma experiência completa."
+                  />
                 </div>
               </section>
             </>
@@ -293,19 +418,30 @@ export default function App() {
 
           {page === "contests" && (
             <section>
-              <Heading eyebrow="OPORTUNIDADES" title="Concursos públicos"
-                subtitle="Encontre editais federais, estaduais e municipais." />
+              <Heading
+                eyebrow="OPORTUNIDADES"
+                title="Concursos públicos"
+                subtitle="Encontre editais federais, estaduais e municipais."
+              />
+
               <div className="filters">
                 <label className="searchbox">
                   <Search size={18} />
-                  <input value={search} onChange={e => setSearch(e.target.value)}
-                    placeholder="Buscar órgão, cargo ou município" />
+                  <input
+                    value={search}
+                    onChange={e => setSearch(e.target.value)}
+                    placeholder="Buscar órgão, cargo ou município"
+                  />
                 </label>
-                <select value={stateFilter}
-                  onChange={e => setStateFilter(e.target.value)}>
+
+                <select
+                  value={stateFilter}
+                  onChange={e => setStateFilter(e.target.value)}
+                >
                   {states.map(s => <option key={s}>{s}</option>)}
                 </select>
               </div>
+
               {!isSupabaseConfigured ? (
                 <Notice text="Configure as variáveis do Supabase para carregar os editais." />
               ) : filteredContests.length === 0 ? (
@@ -315,16 +451,38 @@ export default function App() {
                   {filteredContests.map(c => (
                     <article className="contest-card" key={c.id}>
                       <span className="status-pill">
-                        {c.status === "open" ? "Inscrições abertas" : "Em breve"}
+                        {c.status === "open"
+                          ? "Inscrições abertas"
+                          : "Em breve"}
                       </span>
+
                       <h3>{c.title}</h3>
-                      <p><MapPin size={15} /> {c.city || "Local não informado"} / {c.state || "BR"}</p>
-                      <p><GraduationCap size={15} /> {c.level || "Escolaridade não informada"}</p>
-                      {c.deadline && <p><CalendarDays size={15} />
-                        Até {new Date(c.deadline + "T12:00:00").toLocaleDateString("pt-BR")}
-                      </p>}
+
+                      <p>
+                        <MapPin size={15} />
+                        {c.city || "Local não informado"} / {c.state || "BR"}
+                      </p>
+
+                      <p>
+                        <GraduationCap size={15} />
+                        {c.level || "Escolaridade não informada"}
+                      </p>
+
+                      {c.deadline && (
+                        <p>
+                          <CalendarDays size={15} />
+                          Até {new Date(
+                            c.deadline + "T12:00:00"
+                          ).toLocaleDateString("pt-BR")}
+                        </p>
+                      )}
+
                       {c.official_url && (
-                        <a href={c.official_url} target="_blank" rel="noreferrer">
+                        <a
+                          href={c.official_url}
+                          target="_blank"
+                          rel="noreferrer"
+                        >
                           Consultar edital <ArrowRight size={15} />
                         </a>
                       )}
@@ -337,35 +495,71 @@ export default function App() {
 
           {page === "planner" && (
             <section>
-              <Heading eyebrow="ROTINA E CONSTÂNCIA" title="Meu planejamento"
-                subtitle="Registre o que estudou e construa seu histórico de preparação." />
+              <Heading
+                eyebrow="ROTINA E CONSTÂNCIA"
+                title="Meu planejamento"
+                subtitle="Registre o que estudou e construa seu histórico de preparação."
+              />
+
               {!session ? (
                 <Notice text="Entre na sua conta para registrar e consultar suas sessões de estudo." />
               ) : (
                 <>
-                  <form className="session-form" onSubmit={addStudySession}>
-                    <h3><Plus size={19} /> Registrar sessão de estudo</h3>
-                    <label>Disciplina
-                      <select value={subjectId} onChange={e => setSubjectId(e.target.value)}>
+                  <form
+                    className="session-form"
+                    onSubmit={addStudySession}
+                  >
+                    <h3>
+                      <Plus size={19} /> Registrar sessão de estudo
+                    </h3>
+
+                    <label>
+                      Disciplina
+                      <select
+                        value={subjectId}
+                        onChange={e => setSubjectId(e.target.value)}
+                      >
                         <option value="">Selecione uma disciplina</option>
-                        {subjects.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                        {subjects.map(s => (
+                          <option key={s.id} value={s.id}>
+                            {s.name}
+                          </option>
+                        ))}
                       </select>
                     </label>
-                    <label>Duração em minutos
-                      <input type="number" min="1" max="1440" required
-                        value={minutes} onChange={e => setMinutes(e.target.value)} />
+
+                    <label>
+                      Duração em minutos
+                      <input
+                        type="number"
+                        min="1"
+                        max="1440"
+                        required
+                        value={minutes}
+                        onChange={e => setMinutes(e.target.value)}
+                      />
                     </label>
-                    <label>O que você estudou? (opcional)
-                      <textarea value={notes} onChange={e => setNotes(e.target.value)}
-                        placeholder="Ex.: concordância verbal, questões de provas anteriores..." />
+
+                    <label>
+                      O que você estudou? (opcional)
+                      <textarea
+                        value={notes}
+                        onChange={e => setNotes(e.target.value)}
+                        placeholder="Ex.: concordância verbal, questões de provas anteriores..."
+                      />
                     </label>
+
                     <button className="primary" type="submit">
                       Salvar sessão <CheckCircle2 size={17} />
                     </button>
-                    {message && <p className="form-message">{message}</p>}
+
+                    {message && (
+                      <p className="form-message">{message}</p>
+                    )}
                   </form>
 
                   <h3 className="section-subtitle">Histórico recente</h3>
+
                   {sessions.length === 0 ? (
                     <Empty text="Você ainda não registrou sessões. Comece adicionando seu primeiro estudo!" />
                   ) : (
@@ -373,10 +567,16 @@ export default function App() {
                       {sessions.map(s => (
                         <article key={s.id} className="history-item">
                           <div>
-                            <b>{subjects.find(x => x.id === s.subject_id)?.name || "Estudo livre"}</b>
+                            <b>
+                              {subjects.find(x => x.id === s.subject_id)?.name
+                                || "Estudo livre"}
+                            </b>
                             <p>{s.notes || "Sessão de estudo"}</p>
-                            <small>{new Date(s.studied_at).toLocaleString("pt-BR")}</small>
+                            <small>
+                              {new Date(s.studied_at).toLocaleString("pt-BR")}
+                            </small>
                           </div>
+
                           <strong>{s.duration_minutes} min</strong>
                         </article>
                       ))}
@@ -389,80 +589,32 @@ export default function App() {
 
           {page === "videos" && (
             <section>
-              <Heading eyebrow="SALA DE AULA" title="Videoaulas"
-                subtitle="Aulas publicadas organizadas para sua preparação." />
+              <Heading
+                eyebrow="SALA DE AULA"
+                title="Videoaulas"
+                subtitle="Aulas publicadas organizadas para sua preparação."
+              />
+
               <div className="video-grid">
                 {lessons.length === 0 ? (
                   <Empty text="Ainda não há videoaulas publicadas. Quando forem adicionadas ao catálogo, aparecerão aqui." />
-                ) : lessons.map(l => (
-                  <article className="video-card" key={l.id}>
-                    <a className="video-thumb"
-                      href={`https://www.youtube.com/watch?v=${l.youtube_video_id}`}
-                      target="_blank" rel="noreferrer">
-                      <img src={`https://img.youtube.com/vi/${l.youtube_video_id}/hqdefault.jpg`}
-                        alt="Miniatura da videoaula" />
-                      <PlayCircle />
-                    </a>
-                    <h3>{l.title}</h3>
-                    <p>{l.channel_name || "YouTube"}</p>
-                    <a href={`https://www.youtube.com/watch?v=${l.youtube_video_id}`}
-                      target="_blank" rel="noreferrer">Assistir aula <ArrowRight size={15} /></a>
-                  </article>
-                ))}
-              </div>
-            </section>
-          )}
+                ) : (
+                  lessons.map(l => (
+                    <article className="video-card" key={l.id}>
+                      <a
+                        className="video-thumb"
+                        href={`https://www.youtube.com/watch?v=${l.youtube_video_id}`}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        <img
+                          src={`https://img.youtube.com/vi/${l.youtube_video_id}/hqdefault.jpg`}
+                          alt="Miniatura da videoaula"
+                        />
+                        <PlayCircle />
+                      </a>
 
-          {page === "progress" && (
-            <section>
-              <Heading eyebrow="SUA EVOLUÇÃO" title="Meu desempenho"
-                subtitle="Acompanhe sua dedicação e mantenha a regularidade." />
-              {!session ? (
-                <Notice text="Entre na sua conta para visualizar seu desempenho." />
-              ) : (
-                <>
-                  <div className="metric-grid">
-                    <Metric icon={<Clock3 />} value={`${hours}h ${remainingMinutes}min`}
-                      label="Tempo total estudado" />
-                    <Metric icon={<BookOpen />} value={String(sessions.length)}
-                      label="Sessões realizadas" />
-                    <Metric icon={<CalendarDays />}
-                      value={String(new Set(sessions.map(s => new Date(s.studied_at).toDateString())).size)}
-                      label="Dias com estudo" />
-                  </div>
-                  <h3 className="section-subtitle">Tempo por disciplina</h3>
-                  {subjects.map(s => {
-                    const amount = sessions.filter(x => x.subject_id === s.id)
-                      .reduce((sum, x) => sum + x.duration_minutes, 0);
-                    return amount > 0 ? (
-                      <div className="progress-row" key={s.id}>
-                        <span>{s.name}</span>
-                        <div><i style={{ width: `${Math.min(100, amount / Math.max(totalMinutes, 1) * 100)}%` }} /></div>
-                        <b>{amount} min</b>
-                      </div>
-                    ) : null;
-                  })}
-                  {sessions.length === 0 && <Empty text="Registre suas sessões no planejamento para começar a ver seus resultados." />}
-                </>
-              )}
-            </section>
-          )}
+                      <h3>{l.title}</h3>
+                      <p>{l.channel_name || "YouTube"}</p>
 
-          {page === "account" && (
-            <section className="auth-wrap">
-              <div className="auth-card">
-                <div className="auth-icon"><GraduationCap /></div>
-                <h1>{mode === "login" ? "Bem-vindo de volta!" : "Crie sua conta"}</h1>
-                <p>Acesse seu espaço de preparação no APROVEI.</p>
-                <form onSubmit={handleAuth}>
-                  <label>E-mail
-                    <input type="email" required value={email}
-                      onChange={e => setEmail(e.target.value)} placeholder="voce@email.com" />
-                  </label>
-                  <label>Senha
-                    <input type="password" minLength={6} required value={password}
-                      onChange={e => setPassword(e.target.value)}
-                      placeholder="Mínimo de 6 caracteres" />
-                  </label>
-                  <button className="primary full" type="submit">
-                    {mode === "login" ? "Ent
+                  
