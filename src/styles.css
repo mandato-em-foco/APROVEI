@@ -770,27 +770,41 @@ export default function App() {
             </section>
           )}
 
-          {page === "progress" && (
+                     {page === "progress" && (
             <section>
-              <PageHeading eyebrow="SUA EVOLUÇÃO" title="Meu desempenho" subtitle="Acompanhe sua dedicação e mantenha a consistência." />
+              <PageHeading
+                eyebrow="SUA EVOLUÇÃO"
+                title="Meu desempenho"
+                subtitle="Acompanhe sua dedicação e mantenha a consistência."
+              />
               <div className="student-metrics">
                 <Metric icon={<Clock3 />} value={`${totalHours}h ${remainingMinutes}min`} label="Tempo total de estudo" />
                 <Metric icon={<BookOpen />} value={String(sessions.length)} label="Sessões concluídas" />
                 <Metric icon={<TrendingUp />} value={String(sessions.length ? Math.round(totalMinutes / sessions.length) : 0)} label="Minutos por sessão" />
               </div>
               <section className="student-panel">
-                <div className="panel-heading"><div><span className="eyebrow">HISTÓRICO</span><h2>Suas sessões de estudo</h2></div></div>
-                {sessions.length === 0 ? <Empty text="Quando você registrar seus estudos, seu histórico aparecerá aqui." /> :
-                  <div className="history-list">{sessions.map(item => (
-                    <article className="history-item" key={item.id}>
-                      <div>
-                        <b>{subjects.find(subject => subject.id === item.subject_id)?.name || "Estudo livre"}</b>
-                        <p>{item.notes || "Sessão de estudo"}</p>
-                        <small>{new Date(item.studied_at).toLocaleString("pt-BR")}</small>
-                      </div>
-                      <strong>{item.duration_minutes} min</strong>
-                    </article>
-                  ))}</div>}
+                <div className="panel-heading">
+                  <div>
+                    <span className="eyebrow">HISTÓRICO</span>
+                    <h2>Suas sessões de estudo</h2>
+                  </div>
+                </div>
+                {sessions.length === 0 ? (
+                  <Empty text="Quando você registrar seus estudos, seu histórico aparecerá aqui." />
+                ) : (
+                  <div className="history-list">
+                    {sessions.map(item => (
+                      <article className="history-item" key={item.id}>
+                        <div>
+                          <b>{subjects.find(subject => subject.id === item.subject_id)?.name || "Estudo livre"}</b>
+                          <p>{item.notes || "Sessão de estudo"}</p>
+                          <small>{new Date(item.studied_at).toLocaleString("pt-BR")}</small>
+                        </div>
+                        <strong>{item.duration_minutes} min</strong>
+                      </article>
+                    ))}
+                  </div>
+                )}
               </section>
             </section>
           )}
@@ -874,4 +888,4 @@ function Notice({ text }: { text: string }) {
       <p>{text}</p>
     </div>
   );
-                     }
+}
