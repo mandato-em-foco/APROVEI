@@ -1,11 +1,10 @@
 
 import { useEffect, useMemo, useState } from "react";
-import type { FormEvent } from "react";
+import type { FormEvent, ReactNode } from "react";
 import {
-  BookOpen, CalendarDays, ChartNoAxesCombined,
-  Clock3, GraduationCap, LogIn, LogOut, Menu, Search,
-  ShieldCheck, Video, X, MapPin, ArrowRight, CheckCircle2,
-  PlayCircle, Plus, Target
+  BookOpen, CalendarDays, ChartNoAxesCombined, Clock3, GraduationCap,
+  LogIn, LogOut, Menu, Search, ShieldCheck, Video, X, MapPin,
+  ArrowRight, CheckCircle2, PlayCircle, Plus, Target
 } from "lucide-react";
 import { isSupabaseConfigured, supabase } from "./lib/supabase";
 
@@ -20,10 +19,7 @@ type Contest = {
   official_url: string | null;
 };
 
-type Subject = {
-  id: string;
-  name: string;
-};
+type Subject = { id: string; name: string };
 
 type StudySession = {
   id: string;
@@ -40,7 +36,7 @@ type Lesson = {
   channel_name: string | null;
 };
 
-const navigation = [
+const nav = [
   ["Visão geral", "home"],
   ["Concursos", "contests"],
   ["Meu planejamento", "planner"],
@@ -76,7 +72,7 @@ export default function App() {
   async function refresh(userId?: string) {
     if (!supabase) return;
 
-    const [c, s, v, ss] = await Promise.all([
+    const [c, s, v] = await Promise.all([
       supabase.from("contests")
         .select("id,title,state,city,level,status,deadline,official_url")
         .in("status", ["open", "upcoming"])
@@ -91,21 +87,22 @@ export default function App() {
         .select("id,title,youtube_video_id,channel_name")
         .eq("is_published", true)
         .order("created_at", { ascending: false })
-        .limit(100),
-
-      userId
-        ? supabase.from("study_sessions")
-            .select("id,duration_minutes,studied_at,notes,subject_id")
-            .eq("user_id", userId)
-            .order("studied_at", { ascending: false })
-            .limit(100)
-        : Promise.resolve({ data: [] })
+        .limit(100)
     ]);
 
     if (c.data) setContests(c.data as Contest[]);
     if (s.data) setSubjects(s.data as Subject[]);
     if (v.data) setLessons(v.data as Lesson[]);
-    if (ss.data) setSessions(ss.data as StudySession[]);
+
+    if (userId) {
+      const result = await supabase.from("study_sessions")
+        .select("id,duration_minutes,studied_at,notes,subject_id")
+        .eq("user_id", userId)
+        .order("studied_at", { ascending: false })
+        .limit(100);
+
+      if (result.data) setSessions(result.data as StudySession[]);
+    }
   }
 
   useEffect(() => {
@@ -113,19 +110,13 @@ export default function App() {
 
     supabase.auth.getSession().then(({ data }) => {
       setSession(data.session);
-      if (data.session) {
-        void refresh(data.session.user.id);
-      }
+      if (data.session) void refresh(data.session.user.id);
     });
 
     const { data } = supabase.auth.onAuthStateChange((_event, next) => {
       setSession(next);
-
-      if (next) {
-        void refresh(next.user.id);
-      } else {
-        setSessions([]);
-      }
+      if (next) void refresh(next.user.id);
+      else setSessions([]);
     });
 
     return () => data.subscription.unsubscribe();
@@ -151,7 +142,7 @@ export default function App() {
       : await supabase.auth.signInWithPassword({ email, password });
 
     setAuthMessage(
-      result.error?.message ??
+      result.error?.message ||
       (mode === "signup"
         ? "Cadastro enviado. Confira seu e-mail para confirmar a conta."
         : "Login realizado com sucesso.")
@@ -160,13 +151,12 @@ export default function App() {
 
   async function addStudySession(e: FormEvent) {
     e.preventDefault();
-
     if (!supabase || !session) return;
 
     const duration = Number(minutes);
 
-    if (!Number.isFinite(duration) || duration < 1) {
-      setMessage("Informe uma duração válida.");
+    if (!Number.isFinite(duration) || duration < 1 || duration > 1440) {
+      setMessage("Informe uma duração entre 1 e 1.440 minutos.");
       return;
     }
 
@@ -187,21 +177,18 @@ export default function App() {
     await refresh(session.user.id);
   }
 
-  const filteredContests = useMemo(() =>
-    contests.filter(c =>
-      `${c.title} ${c.city ?? ""} ${c.state ?? ""} ${c.level ?? ""}`
-        .toLowerCase()
-        .includes(search.toLowerCase()) &&
-      (stateFilter === "Todos os estados" || c.state === stateFilter)
-    ), [contests, search, stateFilter]);
+  const filtered = useMemo(() => contests.filter(c =>
+    (c.title + " " + (c.city || "") + " " + (c.state || "") + " " + (c.level || ""))
+      .toLowerCase()
+      .includes(search.toLowerCase()) &&
+    (stateFilter === "Todos os estados" || c.state === stateFilter)
+  ), [contests, search, stateFilter]);
 
   const totalMinutes = sessions.reduce(
-    (sum, item) => sum + item.duration_minutes,
-    0
+    (sum, item) => sum + item.duration_minutes, 0
   );
-
   const hours = Math.floor(totalMinutes / 60);
-  const remainingMinutes = totalMinutes % 60;
+  const rest = totalMinutes % 60;
 
   return (
     <div className="app-shell">
@@ -215,9 +202,7 @@ export default function App() {
         </button>
 
         <button className="brand" onClick={() => navigate("home")}>
-          <span className="brand-mark">
-            A<span>✓</span>
-          </span>
+          <span className="brand-mark">A<span>✓</span></span>
           <span>
             APROVEI
             <small>SUA APROVAÇÃO COMEÇA AQUI</small>
@@ -237,10 +222,7 @@ export default function App() {
               </button>
             </>
           ) : (
-            <button
-              className="login-link"
-              onClick={() => navigate("account")}
-            >
+            <button className="login-link" onClick={() => navigate("account")}>
               <LogIn size={17} /> Entrar
             </button>
           )}
@@ -248,13 +230,13 @@ export default function App() {
       </header>
 
       <div className="layout">
-        <aside className={`sidebar ${mobile ? "open" : ""}`}>
+        <aside className={"sidebar " + (mobile ? "open" : "")}>
           <div className="side-label">ÁREA DO ALUNO</div>
 
-          {navigation.map(([label, key]) => (
+          {nav.map(([label, key]) => (
             <button
               key={key}
-              className={`nav-item ${page === key ? "active" : ""}`}
+              className={"nav-item " + (page === key ? "active" : "")}
               onClick={() => navigate(key)}
             >
               {key === "home" ? <ChartNoAxesCombined /> :
@@ -280,14 +262,10 @@ export default function App() {
             <>
               <section className="hero">
                 <div className="hero-copy">
-                  <span className="eyebrow">
-                    SUA JORNADA COMEÇA AGORA
-                  </span>
-
+                  <span className="eyebrow">SUA JORNADA COMEÇA AGORA</span>
                   <h1>
                     Seu próximo cargo público começa com <em>APROVEI.</em>
                   </h1>
-
                   <p>
                     Organize seus estudos, acompanhe editais e transforme
                     sua preparação em resultados.
@@ -298,12 +276,9 @@ export default function App() {
                       className="primary"
                       onClick={() => navigate(session ? "planner" : "account")}
                     >
-                      {session
-                        ? "Registrar meus estudos"
-                        : "Começar gratuitamente"}
+                      {session ? "Registrar meus estudos" : "Começar gratuitamente"}
                       <ArrowRight size={17} />
                     </button>
-
                     <button
                       className="secondary"
                       onClick={() => navigate("contests")}
@@ -322,18 +297,12 @@ export default function App() {
                 <div className="hero-visual">
                   <div className="orbit orbit-one" />
                   <div className="orbit orbit-two" />
-                  <div className="hero-badge">
-                    <GraduationCap size={45} />
-                  </div>
-
+                  <div className="hero-badge"><GraduationCap size={45} /></div>
                   <div className="floating-card card-top">
-                    <span>FOCO</span>
-                    <b>Disciplina diária</b>
+                    <span>FOCO</span><b>Disciplina diária</b>
                   </div>
-
                   <div className="floating-card card-bottom">
-                    <span>PROGRESSO</span>
-                    <b>Um passo por vez ✓</b>
+                    <span>PROGRESSO</span><b>Um passo por vez ✓</b>
                   </div>
                 </div>
               </section>
@@ -341,16 +310,14 @@ export default function App() {
               <div className="metric-grid">
                 <Metric
                   icon={<Clock3 />}
-                  value={session ? `${hours}h ${remainingMinutes}min` : "—"}
+                  value={session ? hours + "h " + rest + "min" : "—"}
                   label="Tempo registrado"
                 />
-
                 <Metric
                   icon={<BookOpen />}
                   value={String(sessions.length)}
                   label="Sessões de estudo"
                 />
-
                 <Metric
                   icon={<Target />}
                   value={String(contests.length)}
@@ -359,29 +326,14 @@ export default function App() {
               </div>
 
               <section className="feature-grid">
-                <Feature
-                  icon={<Search />}
-                  title="Concursos em todo o Brasil"
-                  text="Pesquise oportunidades por estado, município e escolaridade."
-                />
-
-                <Feature
-                  icon={<CalendarDays />}
-                  title="Planejamento de estudos"
-                  text="Registre sessões e acompanhe seu tempo dedicado."
-                />
-
-                <Feature
-                  icon={<Video />}
-                  title="Videoaulas organizadas"
-                  text="Acesse aulas públicas do YouTube por assunto."
-                />
-
-                <Feature
-                  icon={<ChartNoAxesCombined />}
-                  title="Acompanhe sua evolução"
-                  text="Visualize sua rotina e mantenha o foco."
-                />
+                <Feature icon={<Search />} title="Concursos em todo o Brasil"
+                  text="Pesquise oportunidades por estado, município e escolaridade." />
+                <Feature icon={<CalendarDays />} title="Planejamento de estudos"
+                  text="Registre sessões e acompanhe seu tempo dedicado." />
+                <Feature icon={<Video />} title="Videoaulas organizadas"
+                  text="Acesse aulas públicas do YouTube por assunto." />
+                <Feature icon={<ChartNoAxesCombined />} title="Acompanhe sua evolução"
+                  text="Visualize sua rotina e mantenha o foco." />
               </section>
 
               <section className="plans">
@@ -391,26 +343,13 @@ export default function App() {
                   Valores da proposta inicial. A cobrança ainda será
                   integrada ao Mercado Pago.
                 </p>
-
                 <div className="plan-grid">
-                  <Plan
-                    name="Essencial"
-                    price="14,90"
-                    desc="Para organizar sua rotina."
-                  />
-
-                  <Plan
-                    name="Avançado"
-                    price="24,90"
-                    desc="Para aprofundar a preparação."
-                    featured
-                  />
-
-                  <Plan
-                    name="Aprovação"
-                    price="39,90"
-                    desc="Para uma experiência completa."
-                  />
+                  <Plan name="Essencial" price="14,90"
+                    desc="Para organizar sua rotina." />
+                  <Plan name="Avançado" price="24,90"
+                    desc="Para aprofundar a preparação." featured />
+                  <Plan name="Aprovação" price="39,90"
+                    desc="Para uma experiência completa." />
                 </div>
               </section>
             </>
@@ -418,11 +357,8 @@ export default function App() {
 
           {page === "contests" && (
             <section>
-              <Heading
-                eyebrow="OPORTUNIDADES"
-                title="Concursos públicos"
-                subtitle="Encontre editais federais, estaduais e municipais."
-              />
+              <Heading eyebrow="OPORTUNIDADES" title="Concursos públicos"
+                subtitle="Encontre editais federais, estaduais e municipais." />
 
               <div className="filters">
                 <label className="searchbox">
@@ -433,7 +369,6 @@ export default function App() {
                     placeholder="Buscar órgão, cargo ou município"
                   />
                 </label>
-
                 <select
                   value={stateFilter}
                   onChange={e => setStateFilter(e.target.value)}
@@ -444,45 +379,26 @@ export default function App() {
 
               {!isSupabaseConfigured ? (
                 <Notice text="Configure as variáveis do Supabase para carregar os editais." />
-              ) : filteredContests.length === 0 ? (
+              ) : filtered.length === 0 ? (
                 <Empty text="Nenhum concurso aberto cadastrado ainda. Os editais aparecerão aqui quando forem cadastrados." />
               ) : (
                 <div className="contest-grid">
-                  {filteredContests.map(c => (
+                  {filtered.map(c => (
                     <article className="contest-card" key={c.id}>
                       <span className="status-pill">
-                        {c.status === "open"
-                          ? "Inscrições abertas"
-                          : "Em breve"}
+                        {c.status === "open" ? "Inscrições abertas" : "Em breve"}
                       </span>
-
                       <h3>{c.title}</h3>
-
-                      <p>
-                        <MapPin size={15} />
-                        {c.city || "Local não informado"} / {c.state || "BR"}
-                      </p>
-
-                      <p>
-                        <GraduationCap size={15} />
-                        {c.level || "Escolaridade não informada"}
-                      </p>
-
+                      <p><MapPin size={15} />{c.city || "Local não informado"} / {c.state || "BR"}</p>
+                      <p><GraduationCap size={15} />{c.level || "Escolaridade não informada"}</p>
                       {c.deadline && (
                         <p>
                           <CalendarDays size={15} />
-                          Até {new Date(
-                            c.deadline + "T12:00:00"
-                          ).toLocaleDateString("pt-BR")}
+                          Até {new Date(c.deadline + "T12:00:00").toLocaleDateString("pt-BR")}
                         </p>
                       )}
-
                       {c.official_url && (
-                        <a
-                          href={c.official_url}
-                          target="_blank"
-                          rel="noreferrer"
-                        >
+                        <a href={c.official_url} target="_blank" rel="noreferrer">
                           Consultar edital <ArrowRight size={15} />
                         </a>
                       )}
@@ -495,71 +411,45 @@ export default function App() {
 
           {page === "planner" && (
             <section>
-              <Heading
-                eyebrow="ROTINA E CONSTÂNCIA"
-                title="Meu planejamento"
-                subtitle="Registre o que estudou e construa seu histórico de preparação."
-              />
+              <Heading eyebrow="ROTINA E CONSTÂNCIA" title="Meu planejamento"
+                subtitle="Registre o que estudou e construa seu histórico de preparação." />
 
               {!session ? (
                 <Notice text="Entre na sua conta para registrar e consultar suas sessões de estudo." />
               ) : (
                 <>
-                  <form
-                    className="session-form"
-                    onSubmit={addStudySession}
-                  >
-                    <h3>
-                      <Plus size={19} /> Registrar sessão de estudo
-                    </h3>
+                  <form className="session-form" onSubmit={addStudySession}>
+                    <h3><Plus size={19} /> Registrar sessão de estudo</h3>
 
                     <label>
                       Disciplina
-                      <select
-                        value={subjectId}
-                        onChange={e => setSubjectId(e.target.value)}
-                      >
+                      <select value={subjectId} onChange={e => setSubjectId(e.target.value)}>
                         <option value="">Selecione uma disciplina</option>
                         {subjects.map(s => (
-                          <option key={s.id} value={s.id}>
-                            {s.name}
-                          </option>
+                          <option key={s.id} value={s.id}>{s.name}</option>
                         ))}
                       </select>
                     </label>
 
                     <label>
                       Duração em minutos
-                      <input
-                        type="number"
-                        min="1"
-                        max="1440"
-                        required
-                        value={minutes}
-                        onChange={e => setMinutes(e.target.value)}
-                      />
+                      <input type="number" min="1" max="1440" required
+                        value={minutes} onChange={e => setMinutes(e.target.value)} />
                     </label>
 
                     <label>
                       O que você estudou? (opcional)
-                      <textarea
-                        value={notes}
-                        onChange={e => setNotes(e.target.value)}
-                        placeholder="Ex.: concordância verbal, questões de provas anteriores..."
-                      />
+                      <textarea value={notes} onChange={e => setNotes(e.target.value)}
+                        placeholder="Ex.: concordância verbal, questões de provas anteriores..." />
                     </label>
 
                     <button className="primary" type="submit">
                       Salvar sessão <CheckCircle2 size={17} />
                     </button>
-
-                    {message && (
-                      <p className="form-message">{message}</p>
-                    )}
+                    {message && <p className="form-message">{message}</p>}
                   </form>
 
                   <h3 className="section-subtitle">Histórico recente</h3>
-
                   {sessions.length === 0 ? (
                     <Empty text="Você ainda não registrou sessões. Comece adicionando seu primeiro estudo!" />
                   ) : (
@@ -567,16 +457,10 @@ export default function App() {
                       {sessions.map(s => (
                         <article key={s.id} className="history-item">
                           <div>
-                            <b>
-                              {subjects.find(x => x.id === s.subject_id)?.name
-                                || "Estudo livre"}
-                            </b>
+                            <b>{subjects.find(x => x.id === s.subject_id)?.name || "Estudo livre"}</b>
                             <p>{s.notes || "Sessão de estudo"}</p>
-                            <small>
-                              {new Date(s.studied_at).toLocaleString("pt-BR")}
-                            </small>
+                            <small>{new Date(s.studied_at).toLocaleString("pt-BR")}</small>
                           </div>
-
                           <strong>{s.duration_minutes} min</strong>
                         </article>
                       ))}
@@ -586,35 +470,191 @@ export default function App() {
               )}
             </section>
           )}
-
+                  
           {page === "videos" && (
             <section>
-              <Heading
-                eyebrow="SALA DE AULA"
-                title="Videoaulas"
-                subtitle="Aulas publicadas organizadas para sua preparação."
-              />
+              <Heading eyebrow="SALA DE AULA" title="Videoaulas"
+                subtitle="Aulas publicadas organizadas para sua preparação." />
 
-              <div className="video-grid">
-                {lessons.length === 0 ? (
-                  <Empty text="Ainda não há videoaulas publicadas. Quando forem adicionadas ao catálogo, aparecerão aqui." />
-                ) : (
-                  lessons.map(l => (
+              {lessons.length === 0 ? (
+                <Empty text="Ainda não há videoaulas publicadas. Quando forem adicionadas ao catálogo, aparecerão aqui." />
+              ) : (
+                <div className="video-grid">
+                  {lessons.map(l => (
                     <article className="video-card" key={l.id}>
                       <a
                         className="video-thumb"
-                        href={`https://www.youtube.com/watch?v=${l.youtube_video_id}`}
+                        href={"https://www.youtube.com/watch?v=" + l.youtube_video_id}
                         target="_blank"
                         rel="noreferrer"
                       >
                         <img
-                          src={`https://img.youtube.com/vi/${l.youtube_video_id}/hqdefault.jpg`}
+                          src={"https://img.youtube.com/vi/" + l.youtube_video_id + "/hqdefault.jpg"}
                           alt="Miniatura da videoaula"
                         />
                         <PlayCircle />
                       </a>
-
                       <h3>{l.title}</h3>
                       <p>{l.channel_name || "YouTube"}</p>
+                    </article>
+                  ))}
+                </div>
+              )}
+            </section>
+          )}
 
-                  
+          {page === "progress" && (
+            <section>
+              <Heading eyebrow="SUA EVOLUÇÃO" title="Meu desempenho"
+                subtitle="Acompanhe o tempo que você está dedicando à aprovação." />
+              <div className="metric-grid">
+                <Metric icon={<Clock3 />} value={hours + "h " + rest + "min"}
+                  label="Tempo total estudado" />
+                <Metric icon={<BookOpen />} value={String(sessions.length)}
+                  label="Sessões registradas" />
+                <Metric icon={<Target />} value={String(subjects.length)}
+                  label="Disciplinas disponíveis" />
+              </div>
+              {!session && (
+                <Notice text="Entre na sua conta para visualizar seus dados de desempenho." />
+              )}
+            </section>
+          )}
+
+          {page === "account" && (
+            <section className="account-section">
+              <Heading eyebrow="ÁREA DO ALUNO"
+                title={mode === "login" ? "Bem-vindo de volta" : "Crie sua conta"}
+                subtitle="Acesse seu espaço de preparação no APROVEI." />
+
+              <form className="session-form auth-form" onSubmit={handleAuth}>
+                <label>
+                  E-mail
+                  <input type="email" required value={email}
+                    onChange={e => setEmail(e.target.value)}
+                    placeholder="voce@email.com" />
+                </label>
+
+                <label>
+                  Senha
+                  <input type="password" required minLength={6}
+                    value={password} onChange={e => setPassword(e.target.value)}
+                    placeholder="Mínimo de 6 caracteres" />
+                </label>
+
+                <button className="primary full" type="submit">
+                  {mode === "login" ? "Entrar" : "Criar minha conta"}
+                  <ArrowRight size={17} />
+                </button>
+
+                {authMessage && <p className="form-message">{authMessage}</p>}
+
+                <button
+                  className="text-button"
+                  type="button"
+                  onClick={() => {
+                    setMode(mode === "login" ? "signup" : "login");
+                    setAuthMessage("");
+                  }}
+                >
+                  {mode === "login"
+                    ? "Ainda não tem conta? Cadastre-se"
+                    : "Já tem conta? Entrar"}
+                </button>
+              </form>
+            </section>
+          )}
+        </main>
+      </div>
+    </div>
+  );
+}
+
+function Metric({ icon, value, label }: {
+  icon: ReactNode;
+  value: string;
+  label: string;
+}) {
+  return (
+    <article className="metric-card">
+      <span className="metric-icon">{icon}</span>
+      <strong>{value}</strong>
+      <small>{label}</small>
+    </article>
+  );
+}
+
+function Feature({ icon, title, text }: {
+  icon: ReactNode;
+  title: string;
+  text: string;
+}) {
+  return (
+    <article className="feature-card">
+      <span>{icon}</span>
+      <h3>{title}</h3>
+      <p>{text}</p>
+    </article>
+  );
+}
+
+function Plan({ name, price, desc, featured = false }: {
+  name: string;
+  price: string;
+  desc: string;
+  featured?: boolean;
+}) {
+  return (
+    <article className={"plan-card " + (featured ? "featured" : "")}>
+      <h3>{name}</h3>
+      <div className="plan-price">
+        <small>R$</small> {price}<span>/mês</span>
+      </div>
+      <p>{desc}</p>
+      <ul>
+        <li>Área do aluno</li>
+        <li>Organização de estudos</li>
+        <li>Acompanhamento da rotina</li>
+      </ul>
+      <button
+        className={featured ? "primary" : "secondary"}
+        onClick={() => alert("A assinatura pelo Mercado Pago será disponibilizada em uma próxima etapa.")}
+      >
+        Escolher plano <ArrowRight size={16} />
+      </button>
+    </article>
+  );
+}
+
+function Heading({ eyebrow, title, subtitle }: {
+  eyebrow: string;
+  title: string;
+  subtitle: string;
+}) {
+  return (
+    <div className="page-heading">
+      <span className="eyebrow">{eyebrow}</span>
+      <h1>{title}</h1>
+      <p>{subtitle}</p>
+    </div>
+  );
+}
+
+function Notice({ text }: { text: string }) {
+  return (
+    <div className="notice">
+      <ShieldCheck />
+      <p>{text}</p>
+    </div>
+  );
+}
+
+function Empty({ text }: { text: string }) {
+  return (
+    <div className="empty-state">
+      <BookOpen />
+      <p>{text}</p>
+    </div>
+  );
+              }
+
