@@ -290,8 +290,7 @@ export default function App() {
   const totalMinutes = sessions.reduce((total, item) => total + item.duration_minutes, 0);
   const totalHours = Math.floor(totalMinutes / 60);
   const remainingMinutes = totalMinutes % 60;
-
-  if (page === "landing") {
+    if (page === "landing") {
     return (
       <div className="site-shell">
         <header className="site-header">
@@ -299,256 +298,191 @@ export default function App() {
             <span className="brand-symbol">A<span>✓</span></span>
             <span className="brand-words">APROVEI<small>SUA APROVAÇÃO COMEÇA AQUI!</small></span>
           </button>
-
-          <button className="mobile-toggle" onClick={() => setMobileMenu(!mobileMenu)} aria-label="Abrir menu">
-            {mobileMenu ? <X /> : <Menu />}
-          </button>
-
           <nav className={mobileMenu ? "main-nav open" : "main-nav"}>
             <button onClick={() => goToSection("inicio")}>Início</button>
-            <button onClick={() => goToSection("recursos")}>Plataforma</button>
-            <button onClick={() => goToSection("como-funciona")}>Como funciona</button>
+            <button onClick={() => goToSection("recursos")}>Recursos</button>
+            <button onClick={() => goToSection("concursos")}>Concursos</button>
             <button onClick={() => goToSection("planos")}>Planos</button>
             <button onClick={() => goToSection("duvidas")}>Dúvidas</button>
-            <div className="nav-mobile-actions">
-              <button className="button button-outline" onClick={() => go("login")}>Entrar</button>
-              <button className="button button-primary" onClick={() => go("signup")}>Criar conta</button>
-            </div>
+            <button className="mobile-login" onClick={() => go("login")}>Entrar</button>
           </nav>
-
           <div className="header-actions">
-            <button className="button button-text" onClick={() => go("login")}>Entrar</button>
-            <button className="button button-primary header-cta" onClick={() => go("signup")}>Começar agora <ArrowRight size={16} /></button>
+            <button className="button button-outline" onClick={() => go("login")}>Entrar</button>
+            <button className="button button-primary" onClick={() => go("signup")}>Começar agora <ArrowRight size={16} /></button>
           </div>
+          <button className="menu-toggle" onClick={() => setMobileMenu(!mobileMenu)} aria-label="Abrir menu">
+            {mobileMenu ? <X /> : <Menu />}
+          </button>
         </header>
 
         <main>
-          <section className="hero-section" id="inicio">
-            <div className="hero-background-shape shape-one" />
-            <div className="hero-background-shape shape-two" />
-            <div className="hero-inner">
-              <div className="hero-content">
-                <span className="eyebrow"><span className="eyebrow-dot" /> SUA JORNADA COMEÇA AQUI</span>
-                <h1>Seu esforço merece um plano. Sua aprovação merece <em>APROVEI.</em></h1>
-                <p className="hero-description">
-                  Organize sua preparação para concursos públicos, descubra oportunidades
-                  e acompanhe sua evolução. Tudo em um só lugar, no seu ritmo.
-                </p>
-                <div className="hero-buttons">
-                  <button className="button button-primary button-large" onClick={() => go("signup")}>
-                    Quero começar <ArrowRight size={18} />
-                  </button>
-                  <button className="button button-light button-large" onClick={() => goToSection("recursos")}>
-                    Conhecer a plataforma <ChevronRight size={18} />
-                  </button>
-                </div>
-                <div className="hero-highlights">
-                  <span><CheckCircle2 size={17} /> Organização</span>
-                  <span><CheckCircle2 size={17} /> Estratégia</span>
-                  <span><CheckCircle2 size={17} /> Evolução</span>
-                </div>
+          <section className="hero" id="inicio">
+            <div className="hero-content">
+              <span className="hero-kicker"><Zap size={15} /> SUA JORNADA RUMO À APROVAÇÃO</span>
+              <h1>Seu futuro não espera. <span>Sua aprovação começa aqui.</span></h1>
+              <p>Organize seus estudos, encontre oportunidades e acompanhe sua evolução. Tudo o que você precisa para transformar esforço em resultado.</p>
+              <div className="hero-actions">
+                <button className="button button-primary button-large" onClick={() => go("signup")}>Quero começar <ArrowRight size={18} /></button>
+                <button className="button button-outline button-large" onClick={() => goToSection("recursos")}><Play size={17} /> Conhecer a plataforma</button>
               </div>
-
-              <div className="hero-art" aria-label="Ilustração de painel de estudos">
-                <div className="art-glow" />
-                <div className="study-board">
-                  <div className="board-top">
-                    <div><span className="board-kicker">MEU DESEMPENHO</span><strong>Sua evolução</strong></div>
-                    <span className="board-icon"><TrendingUp size={20} /></span>
-                  </div>
-                  <div className="board-number">+ constância</div>
-                  <div className="board-chart">
-                    <span style={{ height: "34%" }} /><span style={{ height: "49%" }} />
-                    <span style={{ height: "43%" }} /><span style={{ height: "66%" }} />
-                    <span style={{ height: "58%" }} /><span style={{ height: "82%" }} />
-                    <span style={{ height: "94%" }} />
-                  </div>
-                  <div className="board-footer"><span>Comece hoje</span><b>Um passo de cada vez.</b></div>
-                </div>
-                <div className="floating-note note-top"><span><Target size={17} /></span><div><b>Foco no objetivo</b><small>Seu próximo passo começa agora</small></div></div>
-                <div className="floating-note note-bottom"><span><BookOpen size={17} /></span><div><b>Estudo organizado</b><small>Planeje. Execute. Evolua.</small></div></div>
-                <div className="art-decoration decoration-a" />
-                <div className="art-decoration decoration-b" />
+              <div className="hero-trust">
+                <span><CheckCircle2 /> Organização</span>
+                <span><CheckCircle2 /> Estratégia</span>
+                <span><CheckCircle2 /> Evolução</span>
               </div>
             </div>
-            <div className="hero-bottom-line"><span>APROVEI</span><i /> <span>PREPARAÇÃO COM PROPÓSITO</span></div>
+            <div className="hero-visual">
+              <div className="hero-glow" />
+              <div className="dashboard-preview">
+                <div className="preview-top">
+                  <div><span className="preview-dot" /><span className="preview-dot" /><span className="preview-dot" /></div>
+                  <span>APROVEI • ÁREA DO ALUNO</span>
+                </div>
+                <div className="preview-welcome">
+                  <span className="eyebrow">BEM-VINDO À SUA JORNADA</span>
+                  <h3>Um passo de cada vez.</h3>
+                  <p>Seu progresso começa com consistência.</p>
+                </div>
+                <div className="preview-stats">
+                  <div><span className="preview-stat-icon"><Clock3 /></span><strong>02h 30</strong><small>Tempo de estudo</small></div>
+                  <div><span className="preview-stat-icon"><Target /></span><strong>85%</strong><small>Meta semanal</small></div>
+                </div>
+                <div className="preview-progress">
+                  <div><b>Meta de estudos</b><span>5 de 6 dias</span></div>
+                  <div className="progress-track"><span /></div>
+                </div>
+                <div className="preview-task"><span><Check /></span><div><b>Revisão de Português</b><small>Disciplina • 30 minutos</small></div><CheckCircle2 /></div>
+              </div>
+              <div className="floating-note"><span><Award /></span><div><b>Foco no objetivo</b><small>Seu próximo passo começa hoje.</small></div></div>
+            </div>
           </section>
 
-          <section className="trust-strip">
-            <div><GraduationCap /><span>Para diferentes níveis de escolaridade</span></div>
-            <div><FileText /><span>Concursos federais, estaduais e municipais</span></div>
-            <div><Target /><span>Uma rotina com mais direção</span></div>
+          <section className="proof-strip">
+            <div><strong>01</strong><span>Organize sua rotina</span></div>
+            <div><strong>02</strong><span>Encontre oportunidades</span></div>
+            <div><strong>03</strong><span>Acompanhe seu progresso</span></div>
+            <div><strong>04</strong><span>Avance com estratégia</span></div>
           </section>
 
-          <section className="section section-intro" id="recursos">
+          <section className="section features-section" id="recursos">
             <div className="section-heading">
-              <span className="eyebrow">SEU AMBIENTE DE PREPARAÇÃO</span>
-              <h2>Mais organização para transformar <em>planos em conquistas.</em></h2>
-              <p>Uma plataforma pensada para ajudar você a estudar com clareza, acompanhar oportunidades e manter a constância.</p>
+              <span className="eyebrow">UMA PLATAFORMA, MUITAS POSSIBILIDADES</span>
+              <h2>Mais organização. <span>Mais direção.</span></h2>
+              <p>Ferramentas para tornar sua preparação mais clara, produtiva e consistente.</p>
             </div>
-
-            <div className="feature-cards">
-              <FeatureCard icon={<Search />} number="01" title="Encontre concursos"
-                text="Pesquise oportunidades de diferentes órgãos e regiões e consulte os links oficiais disponíveis." />
-              <FeatureCard icon={<CalendarDays />} number="02" title="Organize sua rotina"
-                text="Registre seus estudos, acompanhe o tempo dedicado e construa um histórico de preparação." />
-              <FeatureCard icon={<Video />} number="03" title="Acesse videoaulas"
-                text="Encontre conteúdos públicos organizados por disciplina para apoiar sua aprendizagem." />
-              <FeatureCard icon={<TrendingUp />} number="04" title="Acompanhe sua evolução"
-                text="Visualize seus registros e perceba como a consistência fortalece sua preparação." />
+            <div className="feature-grid">
+              <FeatureCard icon={<CalendarDays />} title="Planejamento inteligente" text="Organize suas disciplinas, registre seus estudos e construa uma rotina que faça sentido." />
+              <FeatureCard icon={<Search />} title="Concursos em foco" text="Pesquise oportunidades e consulte informações e fontes oficiais." />
+              <FeatureCard icon={<Video />} title="Videoaulas" text="Encontre conteúdos públicos organizados para apoiar sua preparação." />
+              <FeatureCard icon={<TrendingUp />} title="Seu desempenho" text="Acompanhe o tempo dedicado e visualize seu histórico de estudos." />
             </div>
           </section>
 
-          <section className="demo-section" id="como-funciona">
-            <div className="demo-layout">
-              <div className="demo-copy">
-                <span className="eyebrow">CONHEÇA POR DENTRO</span>
-                <h2>Seu estudo não precisa ser uma bagunça.</h2>
-                <p>Explore algumas das experiências que fazem parte da proposta APROVEI. Selecione uma área e veja como ela pode ajudar na sua jornada.</p>
-                <div className="demo-tabs" role="tablist" aria-label="Recursos da plataforma">
-                  {demoContent.map((item, index) => (
-                    <button key={item.label} className={demoTab === index ? "demo-tab active" : "demo-tab"}
-                      onClick={() => setDemoTab(index)} role="tab" aria-selected={demoTab === index}>
-                      <span>{item.icon}</span>{item.label}<ChevronRight size={17} />
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <div className="demo-preview">
-                <div className="preview-top"><span className="preview-dot" /><span className="preview-dot" /><span className="preview-dot" /><small>APROVEI / ÁREA DO ALUNO</small></div>
-                <div className="preview-body">
-                  <span className="preview-icon">{demoContent[demoTab].icon}</span>
-                  <span className="preview-label">RECURSO APROVEI</span>
-                  <h3>{demoContent[demoTab].title}</h3>
-                  <p>{demoContent[demoTab].text}</p>
-                  <ul>
-                    {demoContent[demoTab].items.map(item => <li key={item}><Check size={16} />{item}</li>)}
-                  </ul>
-                  <div className="preview-progress"><span /><span /><span /></div>
-                </div>
-                <div className="preview-bottom"><ShieldCheck size={16} /> Sua preparação em um só ambiente</div>
+          <section className="section demo-section">
+            <div className="demo-copy">
+              <span className="eyebrow">CONHEÇA POR DENTRO</span>
+              <h2>Uma preparação mais <span>simples de administrar.</span></h2>
+              <p>Explore algumas das áreas que fazem parte da experiência APROVEI.</p>
+              <div className="demo-tabs">
+                {demoContent.map((item, index) => (
+                  <button key={item.label} className={demoTab === index ? "demo-tab active" : "demo-tab"} onClick={() => setDemoTab(index)}>
+                    <span>{item.icon}</span>{item.label}<ChevronRight size={17} />
+                  </button>
+                ))}
               </div>
             </div>
+            <div className="demo-panel">
+              <div className="demo-panel-top"><span>APROVEI / RECURSOS</span><span className="live-dot">EXPERIÊNCIA</span></div>
+              <div className="demo-panel-icon">{demoContent[demoTab].icon}</div>
+              <h3>{demoContent[demoTab].title}</h3>
+              <p>{demoContent[demoTab].text}</p>
+              <ul>{demoContent[demoTab].items.map(item => <li key={item}><CheckCircle2 />{item}</li>)}</ul>
+              <button className="button button-primary" onClick={() => go("signup")}>Quero experimentar <ArrowRight size={16} /></button>
+            </div>
           </section>
-                    <section className="section audience-section">
+
+          <section className="section audience-section" id="concursos">
             <div className="section-heading">
-              <span className="eyebrow">UM OBJETIVO. MUITOS CAMINHOS.</span>
-              <h2>Qual carreira pública você quer conquistar?</h2>
-              <p>O APROVEI foi pensado para quem busca uma oportunidade no serviço público, em diferentes áreas e níveis.</p>
+              <span className="eyebrow">SEU OBJETIVO É O NOSSO PONTO DE PARTIDA</span>
+              <h2>Prepare-se para a carreira que <span>você deseja.</span></h2>
+              <p>Uma plataforma pensada para diferentes áreas do serviço público.</p>
             </div>
             <div className="audience-grid">
               <Audience icon={<ShieldCheck />} title="Segurança pública" text="Polícia Federal, PRF, Polícias Civis e Militares." />
-              <Audience icon={<LayoutDashboard />} title="Área administrativa" text="Prefeituras, governos estaduais e órgãos federais." />
-              <Audience icon={<BookMarked />} title="Tribunais e justiça" text="Tribunais de Justiça, TRFs, TRTs e outras instituições." />
-              <Audience icon={<Users />} title="Educação e outras áreas" text="Educação, INSS, bancos, área fiscal e Forças Armadas." />
+              <Audience icon={<LandmarkIcon />} title="Tribunais e Judiciário" text="Tribunais, Ministério Público e Defensorias." />
+              <Audience icon={<BriefcaseIcon />} title="Administrativa" text="Órgãos federais, estaduais e municipais." />
+              <Audience icon={<BookOpen />} title="Educação" text="Instituições de ensino e redes públicas." />
+              <Audience icon={<FileText />} title="Fiscal e controle" text="Receita, controladorias e tribunais de contas." />
+              <Audience icon={<Users />} title="Outras carreiras" text="INSS, bancos, Forças Armadas e muito mais." />
             </div>
           </section>
 
-          <section className="plans-section" id="planos">
+          <section className="section plans-section" id="planos">
             <div className="section-heading">
-              <span className="eyebrow">PLANOS APROVEI</span>
-              <h2>Escolha o plano que acompanha sua <em>ambição.</em></h2>
+              <span className="eyebrow">ESCOLHA SUA JORNADA</span>
+              <h2>O plano certo para <span>seu próximo passo.</span></h2>
               <p>Conheça as opções e escolha o período que faz sentido para sua preparação.</p>
             </div>
-
-            <div className="billing-switch" aria-label="Período de contratação">
-              <button className={billing === "annual" ? "active" : ""} onClick={() => setBilling("annual")}>
-                Anual <span>12 meses</span>
-              </button>
-              <button className={billing === "semiannual" ? "active" : ""} onClick={() => setBilling("semiannual")}>
-                Semestral <span>6 meses</span>
-              </button>
-              <button className={billing === "quarterly" ? "active" : ""} onClick={() => setBilling("quarterly")}>
-                Trimestral <span>3 meses</span>
-              </button>
+            <div className="billing-switch">
+              <button className={billing === "quarterly" ? "active" : ""} onClick={() => setBilling("quarterly")}>Trimestral</button>
+              <button className={billing === "semiannual" ? "active" : ""} onClick={() => setBilling("semiannual")}>Semestral</button>
+              <button className={billing === "annual" ? "active" : ""} onClick={() => setBilling("annual")}>Anual <span>MAIOR ECONOMIA</span></button>
             </div>
-
-            <div className="pricing-grid">
-              {plans.map(plan => {
-                const price = plan[billing];
-                const period = billing === "annual" ? "12 meses" : billing === "semiannual" ? "6 meses" : "3 meses";
-                return (
-                  <article className={plan.featured ? "pricing-card featured" : "pricing-card"} key={plan.name}>
-                    {plan.featured && <div className="popular-label"><Zap size={14} /> MAIS ESCOLHIDO</div>}
-                    <div className="pricing-card-head">
-                      <span className="plan-name">{plan.name}</span>
-                      <p>{plan.description}</p>
-                    </div>
-                    <div className="pricing-price">
-                      <small>R$</small><strong>{price}</strong><span>/mês</span>
-                    </div>
-                    <div className="pricing-period">Modalidade de {period}</div>
-                    <div className="pricing-divider" />
-                    <ul className="plan-features">
-                      {plan.features.map(feature => <li key={feature}><CheckCircle2 size={17} />{feature}</li>)}
-                    </ul>
-                    <button className={plan.featured ? "button button-primary plan-button" : "button button-plan-outline plan-button"}
-                      onClick={choosePlan}>
-                      Escolher {plan.name} <ArrowRight size={16} />
-                    </button>
-                  </article>
-                );
-              })}
+            <div className="plans-grid">
+              {plans.map(plan => (
+                <article className={plan.featured ? "plan-card featured" : "plan-card"} key={plan.name}>
+                  {plan.featured && <span className="plan-badge">MAIS ESCOLHIDO</span>}
+                  <h3>{plan.name}</h3>
+                  <p>{plan.description}</p>
+                  <div className="plan-price">
+                    <span>R$</span>
+                    <strong>{plan[billing]}</strong>
+                    <small>/mês</small>
+                  </div>
+                  <span className="plan-period">
+                    {billing === "annual" ? "12 meses" : billing === "semiannual" ? "6 meses" : "3 meses"}
+                  </span>
+                  <ul>{plan.features.map(feature => <li key={feature}><CheckCircle2 />{feature}</li>)}</ul>
+                  <button className={plan.featured ? "button button-primary" : "button button-outline"} onClick={choosePlan}>Escolher plano <ArrowRight size={16} /></button>
+                </article>
+              ))}
             </div>
-            <p className="pricing-note">
-              Valores equivalentes por mês, conforme o período selecionado. As condições e o valor total da contratação serão apresentados antes da confirmação do pagamento.
-            </p>
+            <p className="plans-note">Os valores apresentados são equivalentes mensais. A contratação e as condições de pagamento serão informadas antes da confirmação.</p>
           </section>
 
-          <section className="faq-section" id="duvidas">
-            <div className="faq-layout">
-              <div className="faq-intro">
-                <span className="eyebrow">AINDA TEM DÚVIDAS?</span>
-                <h2>Vamos deixar tudo mais claro.</h2>
-                <p>Reunimos algumas respostas para você conhecer melhor a proposta do APROVEI.</p>
-                <button className="button button-primary" onClick={() => go("signup")}>Quero começar <ArrowRight size={16} /></button>
-              </div>
-              <div className="faq-list">
-                {faqs.map((item, index) => (
-                  <article className={faqOpen === index ? "faq-item open" : "faq-item"} key={item.q}>
-                    <button onClick={() => setFaqOpen(faqOpen === index ? null : index)}
-                      aria-expanded={faqOpen === index}>
-                      <span>{item.q}</span>
-                      <ChevronDown size={19} />
-                    </button>
-                    {faqOpen === index && <p>{item.a}</p>}
-                  </article>
-                ))}
-              </div>
+          <section className="section faq-section" id="duvidas">
+            <div className="faq-intro">
+              <span className="eyebrow">PERGUNTAS FREQUENTES</span>
+              <h2>Ficou com alguma <span>dúvida?</span></h2>
+              <p>Veja algumas respostas para começar com tranquilidade.</p>
+              <button className="button button-outline" onClick={() => go("signup")}>Começar agora <ArrowRight size={16} /></button>
+            </div>
+            <div className="faq-list">
+              {faqs.map((faq, index) => (
+                <article className={faqOpen === index ? "faq-item open" : "faq-item"} key={faq.q}>
+                  <button onClick={() => setFaqOpen(faqOpen === index ? null : index)}>
+                    <span>{faq.q}</span><ChevronDown />
+                  </button>
+                  {faqOpen === index && <p>{faq.a}</p>}
+                </article>
+              ))}
             </div>
           </section>
 
           <section className="final-cta">
-            <div className="cta-orbit" />
-            <div className="final-cta-content">
-              <span className="eyebrow">O PRIMEIRO PASSO É SEU</span>
-              <h2>O futuro que você deseja começa com a decisão de hoje.</h2>
-              <p>Organize sua preparação. Mantenha o foco. Avance um dia de cada vez.</p>
-              <button className="button button-light button-large" onClick={() => go("signup")}>
-                Criar minha conta <ArrowRight size={18} />
-              </button>
-            </div>
+            <div><span className="eyebrow">O SEU FUTURO COMEÇA COM UMA DECISÃO</span><h2>Chegou a hora de levar sua preparação a sério.</h2><p>Organize seus estudos e dê hoje o próximo passo.</p></div>
+            <button className="button button-light button-large" onClick={() => go("signup")}>Criar minha conta <ArrowRight size={18} /></button>
           </section>
         </main>
 
         <footer className="site-footer">
-          <div className="footer-main">
-            <button className="brand footer-brand" onClick={() => goToSection("inicio")}>
-              <span className="brand-symbol">A<span>✓</span></span>
-              <span className="brand-words">APROVEI<small>SUA APROVAÇÃO COMEÇA AQUI!</small></span>
-            </button>
-            <p>Uma plataforma de apoio à sua preparação para concursos públicos.</p>
-            <div className="footer-links">
-              <button onClick={() => goToSection("recursos")}>Plataforma</button>
-              <button onClick={() => goToSection("planos")}>Planos</button>
-              <button onClick={() => goToSection("duvidas")}>Dúvidas</button>
-              <button onClick={() => go("login")}>Entrar</button>
-            </div>
+          <div className="footer-brand">
+            <span className="brand-symbol">A<span>✓</span></span>
+            <div><b>APROVEI</b><small>Sua aprovação começa aqui!</small></div>
           </div>
-          <div className="footer-bottom">
-            <span>© {new Date().getFullYear()} APROVEI. Todos os direitos reservados.</span>
-            <span>Estude com propósito. Avance com estratégia.</span>
-          </div>
+          <p>Organização, estratégia e evolução para sua preparação.</p>
+          <div className="footer-links"><button onClick={() => go("login")}>Entrar</button><button onClick={() => go("signup")}>Criar conta</button><button onClick={() => goToSection("duvidas")}>Ajuda</button></div>
+          <small>© {new Date().getFullYear()} APROVEI. Todos os direitos reservados.</small>
         </footer>
       </div>
     );
@@ -557,13 +491,13 @@ export default function App() {
   if (page === "login" || page === "signup") {
     const isSignup = page === "signup";
     return (
-      <div className="auth-page">
+      <div className="auth-shell">
         <header className="auth-header">
           <button className="brand" onClick={() => go("landing")}>
             <span className="brand-symbol">A<span>✓</span></span>
             <span className="brand-words">APROVEI<small>SUA APROVAÇÃO COMEÇA AQUI!</small></span>
           </button>
-          <button className="back-home" onClick={() => go("landing")}><ChevronLeft size={17} /> Voltar ao início</button>
+          <button className="button button-outline" onClick={() => go("landing")}><ChevronLeft size={17} /> Voltar ao início</button>
         </header>
         <main className="auth-main">
           <div className="auth-promo">
@@ -613,8 +547,8 @@ export default function App() {
         <footer className="auth-footer">© {new Date().getFullYear()} APROVEI — Sua aprovação começa aqui!</footer>
       </div>
     );
-  }
-
+                  }
+  
   const navItems: { id: Page; label: string; icon: ReactNode }[] = [
     { id: "dashboard", label: "Visão geral", icon: <LayoutDashboard /> },
     { id: "contests", label: "Concursos", icon: <Search /> },
@@ -625,148 +559,492 @@ export default function App() {
 
   return (
     <div className="student-shell">
-      <header className="student-topbar">
-        <button className="mobile-toggle student-menu-toggle" onClick={() => setMobileMenu(!mobileMenu)} aria-label="Menu">
-          {mobileMenu ? <X /> : <Menu />}
-        </button>
-        <button className="brand student-brand" onClick={() => go("dashboard")}>
+      <aside className={mobileMenu ? "student-sidebar open" : "student-sidebar"}>
+        <button className="brand student-brand" onClick={() => go("landing")}>
           <span className="brand-symbol">A<span>✓</span></span>
           <span className="brand-words">APROVEI<small>ÁREA DO ALUNO</small></span>
         </button>
-        <div className="student-user">
-          <span>{session?.user?.email || "Área do aluno"}</span>
-          <button className="logout-button" onClick={handleSignOut} title="Sair"><LogOut size={18} /></button>
-        </div>
-      </header>
 
-      <div className="student-layout">
-        <aside className={mobileMenu ? "student-sidebar open" : "student-sidebar"}>
-          <span className="sidebar-caption">MENU PRINCIPAL</span>
+        <div className="student-profile">
+          <span className="profile-avatar"><GraduationCap /></span>
+          <div>
+            <b>{session?.user?.user_metadata?.full_name || "Estudante"}</b>
+            <small>Minha preparação</small>
+          </div>
+        </div>
+
+        <nav className="student-nav">
           {navItems.map(item => (
-            <button key={item.id} className={page === item.id ? "student-nav active" : "student-nav"}
-              onClick={() => go(item.id)}>
-              {item.icon}<span>{item.label}</span>
+            <button
+              key={item.id}
+              className={page === item.id ? "active" : ""}
+              onClick={() => go(item.id)}
+            >
+              {item.icon}
+              <span>{item.label}</span>
             </button>
           ))}
-          <div className="sidebar-help">
-            <span><Headphones size={19} /></span>
-            <b>Continue avançando.</b>
-            <small>Pequenos passos, todos os dias.</small>
+        </nav>
+
+        <div className="sidebar-bottom">
+          <button onClick={() => go("landing")}><LogIn /> Página inicial</button>
+          <button onClick={handleSignOut}><LogOut /> Sair da conta</button>
+        </div>
+      </aside>
+
+      <div className="student-main">
+        <header className="student-topbar">
+          <button
+            className="menu-toggle student-menu-toggle"
+            onClick={() => setMobileMenu(!mobileMenu)}
+            aria-label="Abrir menu"
+          >
+            {mobileMenu ? <X /> : <Menu />}
+          </button>
+
+          <div>
+            <span className="eyebrow">ÁREA DO ALUNO</span>
+            <h1>
+              Olá, {session?.user?.user_metadata?.full_name?.split(" ")[0] || "estudante"}!
+            </h1>
           </div>
-          <button className="back-site" onClick={() => go("landing")}><ChevronLeft size={16} /> Página inicial</button>
-        </aside>
+
+          <button className="topbar-action" onClick={() => go("landing")}>
+            <span>APROVEI</span><ArrowRight />
+          </button>
+        </header>
 
         <main className="student-content">
           {page === "dashboard" && (
-            <>
-              <div className="student-welcome">
-                <div><span className="eyebrow">BEM-VINDO AO APROVEI</span><h1>Sua preparação em movimento.</h1>
-                  <p>Organize seu próximo passo e mantenha o foco no seu objetivo.</p></div>
-                <span className="welcome-icon"><GraduationCap size={35} /></span>
-              </div>
+            <section>
+              <PageHeading
+                eyebrow="SUA JORNADA"
+                title="Visão geral"
+                subtitle="Pequenos avanços diários constroem grandes resultados."
+              />
+
               <div className="student-metrics">
-                <Metric icon={<Clock3 />} value={`${totalHours}h ${remainingMinutes}min`} label="Tempo registrado" />
-                <Metric icon={<BookOpen />} value={String(sessions.length)} label="Sessões de estudo" />
-                <Metric icon={<FileText />} value={String(contests.length)} label="Concursos disponíveis" />
+                <Metric
+                  icon={<Clock3 />}
+                  value={`${totalHours}h ${remainingMinutes}min`}
+                  label="Tempo total de estudo"
+                />
+                <Metric
+                  icon={<BookOpen />}
+                  value={String(sessions.length)}
+                  label="Sessões registradas"
+                />
+                <Metric
+                  icon={<Target />}
+                  value={String(contests.length)}
+                  label="Oportunidades disponíveis"
+                />
               </div>
-              <div className="student-action-grid">
-                <ActionCard icon={<CalendarDays />} title="Registrar estudo" text="Adicione uma nova sessão à sua rotina." onClick={() => go("planner")} />
-                <ActionCard icon={<Search />} title="Buscar concursos" text="Explore as oportunidades disponíveis." onClick={() => go("contests")} />
-                <ActionCard icon={<Video />} title="Assistir videoaulas" text="Acesse o catálogo de conteúdos." onClick={() => go("videos")} />
+
+              <div className="student-grid">
+                <section className="student-panel">
+                  <div className="panel-heading">
+                    <div>
+                      <span className="eyebrow">COMECE POR AQUI</span>
+                      <h2>Seu próximo passo</h2>
+                    </div>
+                  </div>
+
+                  <div className="quick-actions">
+                    <ActionCard
+                      icon={<CalendarDays />}
+                      title="Planejar estudos"
+                      text="Organize sua rotina."
+                      onClick={() => go("planner")}
+                    />
+                    <ActionCard
+                      icon={<Search />}
+                      title="Ver concursos"
+                      text="Encontre oportunidades."
+                      onClick={() => go("contests")}
+                    />
+                    <ActionCard
+                      icon={<Video />}
+                      title="Assistir aulas"
+                      text="Acesse conteúdos."
+                      onClick={() => go("videos")}
+                    />
+                  </div>
+                </section>
+
+                <section className="student-panel welcome-panel">
+                  <span className="welcome-icon"><Award /></span>
+                  <span className="eyebrow">MENSAGEM PARA VOCÊ</span>
+                  <h2>Consistência vale mais que pressa.</h2>
+                  <p>
+                    Defina uma meta possível, cumpra o que planejou e mantenha o foco na sua aprovação.
+                  </p>
+                </section>
               </div>
+
               <section className="student-panel">
-                <div className="panel-heading"><div><span className="eyebrow">SEU HISTÓRICO</span><h2>Estudos recentes</h2></div>
-                  <button onClick={() => go("progress")}>Ver desempenho <ArrowRight size={15} /></button></div>
-                {sessions.length === 0 ? <Empty text="Você ainda não registrou sessões de estudo. Comece hoje mesmo!" /> :
-                  <div className="history-list">{sessions.slice(0, 5).map(item => (
-                    <article className="history-item" key={item.id}>
-                      <div><b>{subjects.find(subject => subject.id === item.subject_id)?.name || "Estudo livre"}</b>
-                        <p>{item.notes || "Sessão de estudo"}</p><small>{new Date(item.studied_at).toLocaleString("pt-BR")}</small></div>
-                      <strong>{item.duration_minutes} min</strong>
-                    </article>
-                  ))}</div>}
+                <div className="panel-heading">
+                  <div>
+                    <span className="eyebrow">RECENTES</span>
+                    <h2>Últimos estudos</h2>
+                  </div>
+                  <button className="text-link" onClick={() => go("progress")}>
+                    Ver histórico <ArrowRight size={15} />
+                  </button>
+                </div>
+
+                {sessions.length === 0 ? (
+                  <Empty text="Você ainda não registrou sessões. Comece hoje e acompanhe sua evolução." />
+                ) : (
+                  <div className="history-list">
+                    {sessions.slice(0, 4).map(item => (
+                      <article className="history-item" key={item.id}>
+                        <div>
+                          <b>
+                            {subjects.find(subject => subject.id === item.subject_id)?.name || "Estudo livre"}
+                          </b>
+                          <p>{item.notes || "Sessão de estudo"}</p>
+                          <small>{new Date(item.studied_at).toLocaleString("pt-BR")}</small>
+                        </div>
+                        <strong>{item.duration_minutes} min</strong>
+                      </article>
+                    ))}
+                  </div>
+                )}
               </section>
-            </>
+            </section>
           )}
 
           {page === "contests" && (
             <section>
-              <PageHeading eyebrow="OPORTUNIDADES" title="Concursos públicos" subtitle="Encontre oportunidades federais, estaduais e municipais." />
-              <div className="student-filters">
-                <label className="student-search"><Search size={18} /><input value={search} onChange={event => setSearch(event.target.value)} placeholder="Buscar órgão, cargo ou município" /></label>
-                <select value={stateFilter} onChange={event => setStateFilter(event.target.value)}>
+              <PageHeading
+                eyebrow="OPORTUNIDADES"
+                title="Concursos públicos"
+                subtitle="Pesquise oportunidades e consulte os detalhes publicados pelos órgãos responsáveis."
+              />
+
+              <div className="filter-bar">
+                <label className="search-field">
+                  <Search />
+                  <input
+                    value={search}
+                    onChange={event => setSearch(event.target.value)}
+                    placeholder="Buscar por órgão, cargo ou cidade..."
+                  />
+                </label>
+
+                <select
+                  value={stateFilter}
+                  onChange={event => setStateFilter(event.target.value)}
+                >
                   {states.map(state => <option key={state}>{state}</option>)}
                 </select>
               </div>
-              {!isSupabaseConfigured ? <Notice text="A conexão com o Supabase não está configurada." /> :
-                filteredContests.length === 0 ? <Empty text="Nenhum concurso aberto cadastrado no momento. As oportunidades serão exibidas aqui quando forem publicadas." /> :
-                  <div className="contest-grid">{filteredContests.map(contest => (
+
+              {filteredContests.length === 0 ? (
+                <Empty text="Nenhuma oportunidade encontrada com esses filtros. Novas informações poderão aparecer quando forem cadastradas." />
+              ) : (
+                <div className="contest-grid">
+                  {filteredContests.map(contest => (
                     <article className="contest-card" key={contest.id}>
-                      <span className="status-pill">{contest.status === "open" ? "Inscrições abertas" : "Em breve"}</span>
+                      <span className="contest-status">
+                        {contest.status === "open" ? "Inscrições abertas" : "Em breve"}
+                      </span>
                       <h3>{contest.title}</h3>
-                      <p><Target size={15} /> {contest.city || "Local não informado"} / {contest.state || "Brasil"}</p>
-                      <p><GraduationCap size={15} /> {contest.level || "Escolaridade não informada"}</p>
-                      {contest.deadline && <p><CalendarDays size={15} /> Até {new Date(contest.deadline + "T12:00:00").toLocaleDateString("pt-BR")}</p>}
-                      {contest.official_url && <a href={contest.official_url} target="_blank" rel="noreferrer">Consultar fonte oficial <ArrowRight size={15} /></a>}
+                      <p>
+                        <span>{contest.city || "Local não informado"}</span>
+                        {contest.state ? ` • ${contest.state}` : ""}
+                      </p>
+
+                      <div className="contest-meta">
+                        <span>{contest.level || "Escolaridade não informada"}</span>
+                        {contest.deadline && (
+                          <span>
+                            Prazo: {new Date(contest.deadline).toLocaleDateString("pt-BR")}
+                          </span>
+                        )}
+                      </div>
+
+                      {contest.official_url && (
+                        <a
+                          className="button button-outline"
+                          href={contest.official_url}
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          Consultar fonte oficial <ArrowRight size={15} />
+                        </a>
+                      )}
                     </article>
-                  ))}</div>}
+                  ))}
+                </div>
+              )}
             </section>
           )}
 
           {page === "planner" && (
             <section>
-              <PageHeading eyebrow="ROTINA E CONSTÂNCIA" title="Meu planejamento" subtitle="Registre o que estudou e construa seu histórico de preparação." />
-              {!session ? <Notice text="Entre na sua conta para registrar suas sessões de estudo." /> : (
-                <>
-                  <form className="student-form" onSubmit={addStudySession}>
-                    <h2><CalendarDays size={20} /> Registrar sessão de estudo</h2>
-                    <label>Disciplina
-                      <select value={subjectId} onChange={event => setSubjectId(event.target.value)}>
-                        <option value="">Selecione uma disciplina</option>
-                        {subjects.map(subject => <option key={subject.id} value={subject.id}>{subject.name}</option>)}
-                      </select>
-                    </label>
-                    <label>Duração em minutos
-                      <input type="number" min="1" max="1440" required value={minutes} onChange={event => setMinutes(event.target.value)} />
-                    </label>
-                    <label>O que você estudou? (opcional)
-                      <textarea value={notes} onChange={event => setNotes(event.target.value)} placeholder="Ex.: direito constitucional, questões de provas anteriores..." />
-                    </label>
-                    <button className="button button-primary" type="submit">Salvar sessão <CheckCircle2 size={17} /></button>
-                    {message && <p className="form-feedback">{message}</p>}
-                  </form>
-                  <section className="student-panel">
-                    <div className="panel-heading"><div><span className="eyebrow">SEU HISTÓRICO</span><h2>Sessões registradas</h2></div></div>
-                    {sessions.length === 0 ? <Empty text="Você ainda não registrou sessões. Adicione seu primeiro estudo acima." /> :
-                      <div className="history-list">{sessions.map(item => (
-                        <article className="history-item" key={item.id}>
-                          <div><b>{subjects.find(subject => subject.id === item.subject_id)?.name || "Estudo livre"}</b>
-                            <p>{item.notes || "Sessão de estudo"}</p><small>{new Date(item.studied_at).toLocaleString("pt-BR")}</small></div>
-                          <strong>{item.duration_minutes} min</strong>
-                        </article>
-                      ))}</div>}
-                  </section>
-                </>
-              )}
+              <PageHeading
+                eyebrow="ROTINA E CONSTÂNCIA"
+                title="Planejamento de estudos"
+                subtitle="Registre seu tempo de dedicação e mantenha seu histórico organizado."
+              />
+
+              <div className="planner-layout">
+                <form className="student-panel study-form" onSubmit={addStudySession}>
+                  <span className="eyebrow">NOVA SESSÃO</span>
+                  <h2>Registrar estudo</h2>
+
+                  <label>
+                    Disciplina
+                    <select
+                      value={subjectId}
+                      onChange={event => setSubjectId(event.target.value)}
+                    >
+                      <option value="">Estudo livre / não selecionada</option>
+                      {subjects.map(subject => (
+                        <option key={subject.id} value={subject.id}>{subject.name}</option>
+                      ))}
+                    </select>
+                  </label>
+
+                  <label>
+                    Tempo dedicado (minutos)
+                    <input
+                      type="number"
+                      min="1"
+                      max="1440"
+                      value={minutes}
+                      onChange={event => setMinutes(event.target.value)}
+                    />
+                  </label>
+
+                  <label>
+                    Observações
+                    <textarea
+                      rows={3}
+                      value={notes}
+                      onChange={event => setNotes(event.target.value)}
+                      placeholder="O que você estudou hoje?"
+                    />
+                  </label>
+
+                  <button className="button button-primary" type="submit">
+                    <CheckCircle2 size={17} /> Salvar sessão
+                  </button>
+
+                  {message && <p className="form-message" role="status">{message}</p>}
+                </form>
+
+                <section className="student-panel planner-tip">
+                  <span className="welcome-icon"><Target /></span>
+                  <span className="eyebrow">DICA DE ESTUDO</span>
+                  <h2>Foco na regularidade.</h2>
+                  <p>
+                    Uma rotina sustentável é mais eficiente do que estudar muitas horas em um único dia e abandonar o planejamento depois.
+                  </p>
+                </section>
+              </div>
             </section>
           )}
 
           {page === "videos" && (
             <section>
-              <PageHeading eyebrow="SALA DE AULA" title="Videoaulas" subtitle="Conteúdos públicos organizados para apoiar sua preparação." />
-              {lessons.length === 0 ? <Empty text="Ainda não há videoaulas publicadas no catálogo. Quando forem cadastradas, aparecerão aqui." /> :
-                <div className="video-grid">{lessons.map(lesson => (
-                  <article className="video-card" key={lesson.id}>
-                    <a className="video-thumb" href={`https://www.youtube.com/watch?v=${lesson.youtube_video_id}`} target="_blank" rel="noreferrer">
-                      <img src={`https://img.youtube.com/vi/${lesson.youtube_video_id}/hqdefault.jpg`} alt={`Miniatura: ${lesson.title}`} />
-                      <span><Play size={25} fill="currentColor" /></span>
-                    </a>
-                    <h3>{lesson.title}</h3><p>{lesson.channel_name || "YouTube"}</p>
-                  </article>
-                ))}</div>}
+              <PageHeading
+                eyebrow="CONTEÚDO PARA SUA PREPARAÇÃO"
+                title="Videoaulas"
+                subtitle="Acesse aulas públicas organizadas para complementar seus estudos."
+              />
+
+              {lessons.length === 0 ? (
+                <Empty text="Ainda não há videoaulas publicadas. O catálogo será exibido aqui quando receber conteúdos." />
+              ) : (
+                <div className="lesson-grid">
+                  {lessons.map(lesson => (
+                    <article className="lesson-card" key={lesson.id}>
+                      <div className="lesson-thumb">
+                        <Play size={28} /><span>VIDEOAULA</span>
+                      </div>
+                      <div className="lesson-body">
+                        <h3>{lesson.title}</h3>
+                        <p>{lesson.channel_name || "Canal do YouTube"}</p>
+                        <a
+                          href={`https://www.youtube.com/watch?v=${lesson.youtube_video_id}`}
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          Assistir no YouTube <ArrowRight size={15} />
+                        </a>
+                      </div>
+                    </article>
+                  ))}
+                </div>
+              )}
+
+              <Notice text="Os vídeos permanecem hospedados em seus canais de origem. O APROVEI organiza o acesso ao conteúdo público." />
             </section>
           )}
 
           {page === "progress" && (
             <section>
-              <PageHe
+              <PageHeading
+                eyebrow="SUA EVOLUÇÃO"
+                title="Meu desempenho"
+                subtitle="Acompanhe sua dedicação e mantenha a consistência."
+              />
+
+              <div className="student-metrics">
+                <Metric
+                  icon={<Clock3 />}
+                  value={`${totalHours}h ${remainingMinutes}min`}
+                  label="Tempo total de estudo"
+                />
+                <Metric
+                  icon={<BookOpen />}
+                  value={String(sessions.length)}
+                  label="Sessões concluídas"
+                />
+                <Metric
+                  icon={<TrendingUp />}
+                  value={String(sessions.length ? Math.round(totalMinutes / sessions.length) : 0)}
+                  label="Minutos por sessão"
+                />
+              </div>
+
+              <section className="student-panel">
+                <div className="panel-heading">
+                  <div>
+                    <span className="eyebrow">HISTÓRICO</span>
+                    <h2>Suas sessões de estudo</h2>
+                  </div>
+                </div>
+
+                {sessions.length === 0 ? (
+                  <Empty text="Quando você registrar seus estudos, seu histórico aparecerá aqui." />
+                ) : (
+                  <div className="history-list">
+                    {sessions.map(item => (
+                      <article className="history-item" key={item.id}>
+                        <div>
+                          <b>
+                            {subjects.find(subject => subject.id === item.subject_id)?.name || "Estudo livre"}
+                          </b>
+                          <p>{item.notes || "Sessão de estudo"}</p>
+                          <small>{new Date(item.studied_at).toLocaleString("pt-BR")}</small>
+                        </div>
+                        <strong>{item.duration_minutes} min</strong>
+                      </article>
+                    ))}
+                  </div>
+                )}
+              </section>
+            </section>
+          )}
+        </main>
+      </div>
+    </div>
+  );
+}
+
+function LandmarkIcon() {
+  return <BookMarked />;
+}
+
+function BriefcaseIcon() {
+  return <FileText />;
+}
+
+function Metric({ icon, value, label }: {
+  icon: ReactNode;
+  value: string;
+  label: string;
+}) {
+  return (
+    <article className="metric-card">
+      <span className="metric-icon">{icon}</span>
+      <div>
+        <strong>{value}</strong>
+        <small>{label}</small>
+      </div>
+    </article>
+  );
+}
+
+function FeatureCard({ icon, title, text }: {
+  icon: ReactNode;
+  title: string;
+  text: string;
+}) {
+  return (
+    <article className="feature-card">
+      <span className="feature-icon">{icon}</span>
+      <h3>{title}</h3>
+      <p>{text}</p>
+    </article>
+  );
+}
+
+function Audience({ icon, title, text }: {
+  icon: ReactNode;
+  title: string;
+  text: string;
+}) {
+  return (
+    <article className="audience-card">
+      <span>{icon}</span>
+      <div>
+        <h3>{title}</h3>
+        <p>{text}</p>
+      </div>
+    </article>
+  );
+}
+
+function ActionCard({ icon, title, text, onClick }: {
+  icon: ReactNode;
+  title: string;
+  text: string;
+  onClick: () => void;
+}) {
+  return (
+    <button className="action-card" onClick={onClick}>
+      <span className="action-icon">{icon}</span>
+      <strong>{title}</strong>
+      <p>{text}</p>
+      <ArrowRight size={18} />
+    </button>
+  );
+}
+
+function PageHeading({ eyebrow, title, subtitle }: {
+  eyebrow: string;
+  title: string;
+  subtitle: string;
+}) {
+  return (
+    <div className="page-heading">
+      <span className="eyebrow">{eyebrow}</span>
+      <h1>{title}</h1>
+      <p>{subtitle}</p>
+    </div>
+  );
+}
+
+function Empty({ text }: { text: string }) {
+  return (
+    <div className="empty-state">
+      <span><BookOpen size={25} /></span>
+      <p>{text}</p>
+    </div>
+  );
+}
+
+function Notice({ text }: { text: string }) {
+  return (
+    <div className="notice">
+      <span><ShieldCheck size={20} /></span>
+      <p>{text}</p>
+    </div>
+  );
+                                        }
+    
