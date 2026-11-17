@@ -1,12 +1,14 @@
-
 import { useEffect, useMemo, useState } from "react";
 import type { FormEvent, ReactNode } from "react";
 import {
-  BookOpen, CalendarDays, ChartNoAxesCombined, Clock3, GraduationCap,
-  LogIn, LogOut, Menu, Search, ShieldCheck, Video, X, MapPin,
-  ArrowRight, CheckCircle2, PlayCircle, Plus, Target
+  ArrowRight, BookOpen, CalendarDays, Check, CheckCircle2, ChevronDown,
+  ChevronLeft, ChevronRight, Clock3, FileText, GraduationCap, Headphones,
+  LayoutDashboard, LogIn, LogOut, Menu, Play, Search, ShieldCheck,
+  Target, TrendingUp, Users, Video, X, Zap, Award, BookMarked
 } from "lucide-react";
 import { isSupabaseConfigured, supabase } from "./lib/supabase";
+
+type Page = "landing" | "login" | "signup" | "dashboard" | "contests" | "planner" | "videos" | "progress";
 
 type Contest = {
   id: string;
@@ -36,27 +38,103 @@ type Lesson = {
   channel_name: string | null;
 };
 
-const nav = [
-  ["Visão geral", "home"],
-  ["Concursos", "contests"],
-  ["Meu planejamento", "planner"],
-  ["Videoaulas", "videos"],
-  ["Meu desempenho", "progress"]
-] as const;
-
-const states = [
-  "Todos os estados", "AC", "AL", "AP", "AM", "BA", "CE", "DF",
-  "ES", "GO", "MA", "MT", "MS", "MG", "PA", "PB", "PR", "PE",
-  "PI", "RJ", "RN", "RS", "RO", "RR", "SC", "SP", "SE", "TO"
+const plans = [
+  {
+    name: "Essencial",
+    description: "O necessário para começar com organização e constância.",
+    annual: "9,90",
+    semiannual: "12,90",
+    quarterly: "14,90",
+    features: ["Organização dos estudos", "Acesso aos concursos", "Registro de estudos", "Acompanhamento básico"],
+    featured: false
+  },
+  {
+    name: "Avançado",
+    description: "Mais recursos para aprofundar sua preparação.",
+    annual: "19,90",
+    semiannual: "22,90",
+    quarterly: "25,90",
+    features: ["Tudo do Essencial", "Planejamento de estudos", "Videoaulas organizadas", "Acompanhamento de desempenho", "Recursos de revisão"],
+    featured: true
+  },
+  {
+    name: "Aprovação",
+    description: "Uma experiência completa para sua jornada.",
+    annual: "33,90",
+    semiannual: "35,90",
+    quarterly: "39,90",
+    features: ["Tudo do Avançado", "Recursos avançados de preparação", "Organização por edital", "Ferramentas de produtividade", "Experiência completa"],
+    featured: false
+  }
 ];
 
+const demoContent = [
+  {
+    label: "Planejamento",
+    title: "Sua rotina, organizada em um só lugar.",
+    text: "Monte uma rotina de estudos, registre o tempo dedicado e acompanhe sua constância.",
+    icon: <CalendarDays />,
+    items: ["Defina suas disciplinas", "Registre cada sessão", "Acompanhe seu histórico"]
+  },
+  {
+    label: "Concursos",
+    title: "Encontre oportunidades para sua carreira.",
+    text: "Consulte concursos federais, estaduais e municipais em uma área organizada.",
+    icon: <Search />,
+    items: ["Pesquise por órgão e cargo", "Filtre por estado", "Consulte a fonte oficial"]
+  },
+  {
+    label: "Videoaulas",
+    title: "Conteúdo organizado para facilitar sua preparação.",
+    text: "Encontre aulas públicas do YouTube organizadas por assunto e disciplina.",
+    icon: <Video />,
+    items: ["Aulas por disciplina", "Acesso direto ao YouTube", "Estude no seu ritmo"]
+  }
+];
+
+const faqs = [
+  {
+    q: "O que é o APROVEI?",
+    a: "O APROVEI é uma plataforma de apoio à preparação para concursos públicos. A proposta é reunir organização dos estudos, oportunidades, videoaulas e acompanhamento de desempenho em um só ambiente."
+  },
+  {
+    q: "Posso estudar para qualquer concurso?",
+    a: "A plataforma foi planejada para atender diferentes áreas e níveis de escolaridade, incluindo concursos policiais, administrativos, tribunais, educação, área fiscal, bancos e Forças Armadas."
+  },
+  {
+    q: "Os planos são cobrados mensalmente?",
+    a: "Os valores exibidos representam o equivalente mensal de cada modalidade: trimestral, semestral ou anual. A forma e o valor total da cobrança serão informados claramente antes da confirmação da contratação."
+  },
+  {
+    q: "Como faço para começar?",
+    a: "Você poderá criar sua conta pela opção de cadastro. Depois, poderá acessar a área do aluno e utilizar os recursos que estiverem disponíveis no seu plano."
+  },
+  {
+    q: "As videoaulas são do APROVEI?",
+    a: "O catálogo inicial poderá reunir videoaulas públicas disponíveis no YouTube, organizadas por disciplina. O conteúdo continua hospedado nos canais responsáveis."
+  }
+];
+
+const states = [
+  "Todos os estados", "AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES",
+  "GO", "MA", "MT", "MS", "MG", "PA", "PB", "PR", "PE", "PI", "RJ",
+  "RN", "RS", "RO", "RR", "SC", "SP", "SE", "TO"
+];
+
+function money(value: string) {
+  return `R$ ${value}`;
+}
+
 export default function App() {
-  const [page, setPage] = useState("home");
-  const [mobile, setMobile] = useState(false);
+  const [page, setPage] = useState<Page>("landing");
+  const [mobileMenu, setMobileMenu] = useState(false);
+  const [demoTab, setDemoTab] = useState(0);
+  const [faqOpen, setFaqOpen] = useState<number | null>(0);
+  const [billing, setBilling] = useState<"annual" | "semiannual" | "quarterly">("annual");
   const [session, setSession] = useState<any>(null);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [mode, setMode] = useState<"login" | "signup">("login");
+  const [fullName, setFullName] = useState("");
   const [authMessage, setAuthMessage] = useState("");
   const [contests, setContests] = useState<Contest[]>([]);
   const [subjects, setSubjects] = useState<Subject[]>([]);
@@ -72,17 +150,13 @@ export default function App() {
   async function refresh(userId?: string) {
     if (!supabase) return;
 
-    const [c, s, v] = await Promise.all([
+    const [contestResult, subjectResult, lessonResult] = await Promise.all([
       supabase.from("contests")
         .select("id,title,state,city,level,status,deadline,official_url")
         .in("status", ["open", "upcoming"])
         .order("deadline", { ascending: true })
         .limit(100),
-
-      supabase.from("subjects")
-        .select("id,name")
-        .order("name"),
-
+      supabase.from("subjects").select("id,name").order("name"),
       supabase.from("video_lessons")
         .select("id,title,youtube_video_id,channel_name")
         .eq("is_published", true)
@@ -90,9 +164,9 @@ export default function App() {
         .limit(100)
     ]);
 
-    if (c.data) setContests(c.data as Contest[]);
-    if (s.data) setSubjects(s.data as Subject[]);
-    if (v.data) setLessons(v.data as Lesson[]);
+    if (contestResult.data) setContests(contestResult.data as Contest[]);
+    if (subjectResult.data) setSubjects(subjectResult.data as Subject[]);
+    if (lessonResult.data) setLessons(lessonResult.data as Lesson[]);
 
     if (userId) {
       const result = await supabase.from("study_sessions")
@@ -122,39 +196,66 @@ export default function App() {
     return () => data.subscription.unsubscribe();
   }, []);
 
-  function navigate(next: string) {
+  function go(next: Page) {
     setPage(next);
-    setMobile(false);
+    setMobileMenu(false);
     setMessage("");
+    setAuthMessage("");
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
-  async function handleAuth(e: FormEvent) {
-    e.preventDefault();
+  function goToSection(id: string) {
+    setMobileMenu(false);
+    if (page !== "landing") setPage("landing");
+    window.setTimeout(() => {
+      document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
+    }, 80);
+  }
+
+  function choosePlan() {
+    go(session ? "dashboard" : "signup");
+  }
+
+  async function handleAuth(event: FormEvent) {
+    event.preventDefault();
     setAuthMessage("");
 
     if (!supabase) {
-      setAuthMessage("O Supabase não está configurado.");
+      setAuthMessage("A conexão com o sistema ainda não está configurada. Tente novamente mais tarde.");
       return;
     }
 
-    const result = mode === "signup"
-      ? await supabase.auth.signUp({ email, password })
+    const result = page === "signup"
+      ? await supabase.auth.signUp({
+          email,
+          password,
+          options: { data: { full_name: fullName.trim() } }
+        })
       : await supabase.auth.signInWithPassword({ email, password });
 
-    setAuthMessage(
-      result.error?.message ||
-      (mode === "signup"
-        ? "Cadastro enviado. Confira seu e-mail para confirmar a conta."
-        : "Login realizado com sucesso.")
-    );
+    if (result.error) {
+      setAuthMessage(result.error.message);
+      return;
+    }
+
+    if (page === "signup") {
+      setAuthMessage("Cadastro recebido! Confira seu e-mail para confirmar a conta.");
+    } else {
+      setAuthMessage("Login realizado. Sua área de estudos está sendo carregada.");
+      if (result.data.session) go("dashboard");
+    }
   }
 
-  async function addStudySession(e: FormEvent) {
-    e.preventDefault();
+  async function handleSignOut() {
+    await supabase?.auth.signOut();
+    go("landing");
+  }
+
+  async function addStudySession(event: FormEvent) {
+    event.preventDefault();
     if (!supabase || !session) return;
 
     const duration = Number(minutes);
-
     if (!Number.isFinite(duration) || duration < 1 || duration > 1440) {
       setMessage("Informe uma duração entre 1 e 1.440 minutos.");
       return;
@@ -168,7 +269,7 @@ export default function App() {
     });
 
     if (error) {
-      setMessage("Erro ao salvar: " + error.message);
+      setMessage("Não foi possível salvar: " + error.message);
       return;
     }
 
@@ -177,484 +278,495 @@ export default function App() {
     await refresh(session.user.id);
   }
 
-  const filtered = useMemo(() => contests.filter(c =>
-    (c.title + " " + (c.city || "") + " " + (c.state || "") + " " + (c.level || ""))
-      .toLowerCase()
-      .includes(search.toLowerCase()) &&
-    (stateFilter === "Todos os estados" || c.state === stateFilter)
-  ), [contests, search, stateFilter]);
+  const filteredContests = useMemo(() => contests.filter(contest => {
+    const searchable = [
+      contest.title, contest.city || "", contest.state || "", contest.level || ""
+    ].join(" ").toLowerCase();
 
-  const totalMinutes = sessions.reduce(
-    (sum, item) => sum + item.duration_minutes, 0
-  );
-  const hours = Math.floor(totalMinutes / 60);
-  const rest = totalMinutes % 60;
+    return searchable.includes(search.toLowerCase()) &&
+      (stateFilter === "Todos os estados" || contest.state === stateFilter);
+  }), [contests, search, stateFilter]);
+
+  const totalMinutes = sessions.reduce((total, item) => total + item.duration_minutes, 0);
+  const totalHours = Math.floor(totalMinutes / 60);
+  const remainingMinutes = totalMinutes % 60;
+
+  if (page === "landing") {
+    return (
+      <div className="site-shell">
+        <header className="site-header">
+          <button className="brand" onClick={() => go("landing")} aria-label="APROVEI - início">
+            <span className="brand-symbol">A<span>✓</span></span>
+            <span className="brand-words">APROVEI<small>SUA APROVAÇÃO COMEÇA AQUI!</small></span>
+          </button>
+
+          <button className="mobile-toggle" onClick={() => setMobileMenu(!mobileMenu)} aria-label="Abrir menu">
+            {mobileMenu ? <X /> : <Menu />}
+          </button>
+
+          <nav className={mobileMenu ? "main-nav open" : "main-nav"}>
+            <button onClick={() => goToSection("inicio")}>Início</button>
+            <button onClick={() => goToSection("recursos")}>Plataforma</button>
+            <button onClick={() => goToSection("como-funciona")}>Como funciona</button>
+            <button onClick={() => goToSection("planos")}>Planos</button>
+            <button onClick={() => goToSection("duvidas")}>Dúvidas</button>
+            <div className="nav-mobile-actions">
+              <button className="button button-outline" onClick={() => go("login")}>Entrar</button>
+              <button className="button button-primary" onClick={() => go("signup")}>Criar conta</button>
+            </div>
+          </nav>
+
+          <div className="header-actions">
+            <button className="button button-text" onClick={() => go("login")}>Entrar</button>
+            <button className="button button-primary header-cta" onClick={() => go("signup")}>Começar agora <ArrowRight size={16} /></button>
+          </div>
+        </header>
+
+        <main>
+          <section className="hero-section" id="inicio">
+            <div className="hero-background-shape shape-one" />
+            <div className="hero-background-shape shape-two" />
+            <div className="hero-inner">
+              <div className="hero-content">
+                <span className="eyebrow"><span className="eyebrow-dot" /> SUA JORNADA COMEÇA AQUI</span>
+                <h1>Seu esforço merece um plano. Sua aprovação merece <em>APROVEI.</em></h1>
+                <p className="hero-description">
+                  Organize sua preparação para concursos públicos, descubra oportunidades
+                  e acompanhe sua evolução. Tudo em um só lugar, no seu ritmo.
+                </p>
+                <div className="hero-buttons">
+                  <button className="button button-primary button-large" onClick={() => go("signup")}>
+                    Quero começar <ArrowRight size={18} />
+                  </button>
+                  <button className="button button-light button-large" onClick={() => goToSection("recursos")}>
+                    Conhecer a plataforma <ChevronRight size={18} />
+                  </button>
+                </div>
+                <div className="hero-highlights">
+                  <span><CheckCircle2 size={17} /> Organização</span>
+                  <span><CheckCircle2 size={17} /> Estratégia</span>
+                  <span><CheckCircle2 size={17} /> Evolução</span>
+                </div>
+              </div>
+
+              <div className="hero-art" aria-label="Ilustração de painel de estudos">
+                <div className="art-glow" />
+                <div className="study-board">
+                  <div className="board-top">
+                    <div><span className="board-kicker">MEU DESEMPENHO</span><strong>Sua evolução</strong></div>
+                    <span className="board-icon"><TrendingUp size={20} /></span>
+                  </div>
+                  <div className="board-number">+ constância</div>
+                  <div className="board-chart">
+                    <span style={{ height: "34%" }} /><span style={{ height: "49%" }} />
+                    <span style={{ height: "43%" }} /><span style={{ height: "66%" }} />
+                    <span style={{ height: "58%" }} /><span style={{ height: "82%" }} />
+                    <span style={{ height: "94%" }} />
+                  </div>
+                  <div className="board-footer"><span>Comece hoje</span><b>Um passo de cada vez.</b></div>
+                </div>
+                <div className="floating-note note-top"><span><Target size={17} /></span><div><b>Foco no objetivo</b><small>Seu próximo passo começa agora</small></div></div>
+                <div className="floating-note note-bottom"><span><BookOpen size={17} /></span><div><b>Estudo organizado</b><small>Planeje. Execute. Evolua.</small></div></div>
+                <div className="art-decoration decoration-a" />
+                <div className="art-decoration decoration-b" />
+              </div>
+            </div>
+            <div className="hero-bottom-line"><span>APROVEI</span><i /> <span>PREPARAÇÃO COM PROPÓSITO</span></div>
+          </section>
+
+          <section className="trust-strip">
+            <div><GraduationCap /><span>Para diferentes níveis de escolaridade</span></div>
+            <div><FileText /><span>Concursos federais, estaduais e municipais</span></div>
+            <div><Target /><span>Uma rotina com mais direção</span></div>
+          </section>
+
+          <section className="section section-intro" id="recursos">
+            <div className="section-heading">
+              <span className="eyebrow">SEU AMBIENTE DE PREPARAÇÃO</span>
+              <h2>Mais organização para transformar <em>planos em conquistas.</em></h2>
+              <p>Uma plataforma pensada para ajudar você a estudar com clareza, acompanhar oportunidades e manter a constância.</p>
+            </div>
+
+            <div className="feature-cards">
+              <FeatureCard icon={<Search />} number="01" title="Encontre concursos"
+                text="Pesquise oportunidades de diferentes órgãos e regiões e consulte os links oficiais disponíveis." />
+              <FeatureCard icon={<CalendarDays />} number="02" title="Organize sua rotina"
+                text="Registre seus estudos, acompanhe o tempo dedicado e construa um histórico de preparação." />
+              <FeatureCard icon={<Video />} number="03" title="Acesse videoaulas"
+                text="Encontre conteúdos públicos organizados por disciplina para apoiar sua aprendizagem." />
+              <FeatureCard icon={<TrendingUp />} number="04" title="Acompanhe sua evolução"
+                text="Visualize seus registros e perceba como a consistência fortalece sua preparação." />
+            </div>
+          </section>
+
+          <section className="demo-section" id="como-funciona">
+            <div className="demo-layout">
+              <div className="demo-copy">
+                <span className="eyebrow">CONHEÇA POR DENTRO</span>
+                <h2>Seu estudo não precisa ser uma bagunça.</h2>
+                <p>Explore algumas das experiências que fazem parte da proposta APROVEI. Selecione uma área e veja como ela pode ajudar na sua jornada.</p>
+                <div className="demo-tabs" role="tablist" aria-label="Recursos da plataforma">
+                  {demoContent.map((item, index) => (
+                    <button key={item.label} className={demoTab === index ? "demo-tab active" : "demo-tab"}
+                      onClick={() => setDemoTab(index)} role="tab" aria-selected={demoTab === index}>
+                      <span>{item.icon}</span>{item.label}<ChevronRight size={17} />
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className="demo-preview">
+                <div className="preview-top"><span className="preview-dot" /><span className="preview-dot" /><span className="preview-dot" /><small>APROVEI / ÁREA DO ALUNO</small></div>
+                <div className="preview-body">
+                  <span className="preview-icon">{demoContent[demoTab].icon}</span>
+                  <span className="preview-label">RECURSO APROVEI</span>
+                  <h3>{demoContent[demoTab].title}</h3>
+                  <p>{demoContent[demoTab].text}</p>
+                  <ul>
+                    {demoContent[demoTab].items.map(item => <li key={item}><Check size={16} />{item}</li>)}
+                  </ul>
+                  <div className="preview-progress"><span /><span /><span /></div>
+                </div>
+                <div className="preview-bottom"><ShieldCheck size={16} /> Sua preparação em um só ambiente</div>
+              </div>
+            </div>
+          </section>
+                    <section className="section audience-section">
+            <div className="section-heading">
+              <span className="eyebrow">UM OBJETIVO. MUITOS CAMINHOS.</span>
+              <h2>Qual carreira pública você quer conquistar?</h2>
+              <p>O APROVEI foi pensado para quem busca uma oportunidade no serviço público, em diferentes áreas e níveis.</p>
+            </div>
+            <div className="audience-grid">
+              <Audience icon={<ShieldCheck />} title="Segurança pública" text="Polícia Federal, PRF, Polícias Civis e Militares." />
+              <Audience icon={<LayoutDashboard />} title="Área administrativa" text="Prefeituras, governos estaduais e órgãos federais." />
+              <Audience icon={<BookMarked />} title="Tribunais e justiça" text="Tribunais de Justiça, TRFs, TRTs e outras instituições." />
+              <Audience icon={<Users />} title="Educação e outras áreas" text="Educação, INSS, bancos, área fiscal e Forças Armadas." />
+            </div>
+          </section>
+
+          <section className="plans-section" id="planos">
+            <div className="section-heading">
+              <span className="eyebrow">PLANOS APROVEI</span>
+              <h2>Escolha o plano que acompanha sua <em>ambição.</em></h2>
+              <p>Conheça as opções e escolha o período que faz sentido para sua preparação.</p>
+            </div>
+
+            <div className="billing-switch" aria-label="Período de contratação">
+              <button className={billing === "annual" ? "active" : ""} onClick={() => setBilling("annual")}>
+                Anual <span>12 meses</span>
+              </button>
+              <button className={billing === "semiannual" ? "active" : ""} onClick={() => setBilling("semiannual")}>
+                Semestral <span>6 meses</span>
+              </button>
+              <button className={billing === "quarterly" ? "active" : ""} onClick={() => setBilling("quarterly")}>
+                Trimestral <span>3 meses</span>
+              </button>
+            </div>
+
+            <div className="pricing-grid">
+              {plans.map(plan => {
+                const price = plan[billing];
+                const period = billing === "annual" ? "12 meses" : billing === "semiannual" ? "6 meses" : "3 meses";
+                return (
+                  <article className={plan.featured ? "pricing-card featured" : "pricing-card"} key={plan.name}>
+                    {plan.featured && <div className="popular-label"><Zap size={14} /> MAIS ESCOLHIDO</div>}
+                    <div className="pricing-card-head">
+                      <span className="plan-name">{plan.name}</span>
+                      <p>{plan.description}</p>
+                    </div>
+                    <div className="pricing-price">
+                      <small>R$</small><strong>{price}</strong><span>/mês</span>
+                    </div>
+                    <div className="pricing-period">Modalidade de {period}</div>
+                    <div className="pricing-divider" />
+                    <ul className="plan-features">
+                      {plan.features.map(feature => <li key={feature}><CheckCircle2 size={17} />{feature}</li>)}
+                    </ul>
+                    <button className={plan.featured ? "button button-primary plan-button" : "button button-plan-outline plan-button"}
+                      onClick={choosePlan}>
+                      Escolher {plan.name} <ArrowRight size={16} />
+                    </button>
+                  </article>
+                );
+              })}
+            </div>
+            <p className="pricing-note">
+              Valores equivalentes por mês, conforme o período selecionado. As condições e o valor total da contratação serão apresentados antes da confirmação do pagamento.
+            </p>
+          </section>
+
+          <section className="faq-section" id="duvidas">
+            <div className="faq-layout">
+              <div className="faq-intro">
+                <span className="eyebrow">AINDA TEM DÚVIDAS?</span>
+                <h2>Vamos deixar tudo mais claro.</h2>
+                <p>Reunimos algumas respostas para você conhecer melhor a proposta do APROVEI.</p>
+                <button className="button button-primary" onClick={() => go("signup")}>Quero começar <ArrowRight size={16} /></button>
+              </div>
+              <div className="faq-list">
+                {faqs.map((item, index) => (
+                  <article className={faqOpen === index ? "faq-item open" : "faq-item"} key={item.q}>
+                    <button onClick={() => setFaqOpen(faqOpen === index ? null : index)}
+                      aria-expanded={faqOpen === index}>
+                      <span>{item.q}</span>
+                      <ChevronDown size={19} />
+                    </button>
+                    {faqOpen === index && <p>{item.a}</p>}
+                  </article>
+                ))}
+              </div>
+            </div>
+          </section>
+
+          <section className="final-cta">
+            <div className="cta-orbit" />
+            <div className="final-cta-content">
+              <span className="eyebrow">O PRIMEIRO PASSO É SEU</span>
+              <h2>O futuro que você deseja começa com a decisão de hoje.</h2>
+              <p>Organize sua preparação. Mantenha o foco. Avance um dia de cada vez.</p>
+              <button className="button button-light button-large" onClick={() => go("signup")}>
+                Criar minha conta <ArrowRight size={18} />
+              </button>
+            </div>
+          </section>
+        </main>
+
+        <footer className="site-footer">
+          <div className="footer-main">
+            <button className="brand footer-brand" onClick={() => goToSection("inicio")}>
+              <span className="brand-symbol">A<span>✓</span></span>
+              <span className="brand-words">APROVEI<small>SUA APROVAÇÃO COMEÇA AQUI!</small></span>
+            </button>
+            <p>Uma plataforma de apoio à sua preparação para concursos públicos.</p>
+            <div className="footer-links">
+              <button onClick={() => goToSection("recursos")}>Plataforma</button>
+              <button onClick={() => goToSection("planos")}>Planos</button>
+              <button onClick={() => goToSection("duvidas")}>Dúvidas</button>
+              <button onClick={() => go("login")}>Entrar</button>
+            </div>
+          </div>
+          <div className="footer-bottom">
+            <span>© {new Date().getFullYear()} APROVEI. Todos os direitos reservados.</span>
+            <span>Estude com propósito. Avance com estratégia.</span>
+          </div>
+        </footer>
+      </div>
+    );
+  }
+
+  if (page === "login" || page === "signup") {
+    const isSignup = page === "signup";
+    return (
+      <div className="auth-page">
+        <header className="auth-header">
+          <button className="brand" onClick={() => go("landing")}>
+            <span className="brand-symbol">A<span>✓</span></span>
+            <span className="brand-words">APROVEI<small>SUA APROVAÇÃO COMEÇA AQUI!</small></span>
+          </button>
+          <button className="back-home" onClick={() => go("landing")}><ChevronLeft size={17} /> Voltar ao início</button>
+        </header>
+        <main className="auth-main">
+          <div className="auth-promo">
+            <span className="eyebrow">SUA JORNADA CONTINUA</span>
+            <h1>{isSignup ? "Comece a construir sua aprovação." : "Bom ter você de volta."}</h1>
+            <p>{isSignup ? "Crie sua conta e dê o primeiro passo para uma preparação mais organizada." : "Entre na sua conta e continue avançando na sua preparação."}</p>
+            <div className="auth-promo-points">
+              <span><CheckCircle2 /> Organização dos estudos</span>
+              <span><CheckCircle2 /> Acompanhamento da evolução</span>
+              <span><CheckCircle2 /> Oportunidades em um só lugar</span>
+            </div>
+          </div>
+          <form className="auth-card" onSubmit={handleAuth}>
+            <span className="auth-card-icon"><GraduationCap size={27} /></span>
+            <h2>{isSignup ? "Criar minha conta" : "Acessar minha conta"}</h2>
+            <p>{isSignup ? "Preencha os dados para começar." : "Informe seus dados de acesso."}</p>
+
+            {isSignup && (
+              <label>Nome completo
+                <input type="text" required autoComplete="name" value={fullName}
+                  onChange={event => setFullName(event.target.value)} placeholder="Seu nome" />
+              </label>
+            )}
+            <label>E-mail
+              <input type="email" required autoComplete="email" value={email}
+                onChange={event => setEmail(event.target.value)} placeholder="voce@email.com" />
+            </label>
+            <label>Senha
+              <input type="password" required minLength={6}
+                autoComplete={isSignup ? "new-password" : "current-password"}
+                value={password} onChange={event => setPassword(event.target.value)}
+                placeholder="Mínimo de 6 caracteres" />
+            </label>
+            <button className="button button-primary auth-submit" type="submit">
+              {isSignup ? "Criar conta" : "Entrar"} <ArrowRight size={17} />
+            </button>
+            {authMessage && <p className="auth-feedback" role="status">{authMessage}</p>}
+            <div className="auth-switch">
+              {isSignup ? "Já tem uma conta?" : "Ainda não tem uma conta?"}
+              <button type="button" onClick={() => { setAuthMessage(""); go(isSignup ? "login" : "signup"); }}>
+                {isSignup ? "Entrar" : "Cadastre-se"}
+              </button>
+            </div>
+            {!isSupabaseConfigured && <p className="auth-warning">A conexão com o Supabase precisa ser configurada no ambiente de hospedagem.</p>}
+          </form>
+        </main>
+        <footer className="auth-footer">© {new Date().getFullYear()} APROVEI — Sua aprovação começa aqui!</footer>
+      </div>
+    );
+  }
+
+  const navItems: { id: Page; label: string; icon: ReactNode }[] = [
+    { id: "dashboard", label: "Visão geral", icon: <LayoutDashboard /> },
+    { id: "contests", label: "Concursos", icon: <Search /> },
+    { id: "planner", label: "Planejamento", icon: <CalendarDays /> },
+    { id: "videos", label: "Videoaulas", icon: <Video /> },
+    { id: "progress", label: "Meu desempenho", icon: <TrendingUp /> }
+  ];
 
   return (
-    <div className="app-shell">
-      <header className="topbar">
-        <button
-          className="menu-button"
-          onClick={() => setMobile(!mobile)}
-          aria-label="Menu"
-        >
-          {mobile ? <X /> : <Menu />}
+    <div className="student-shell">
+      <header className="student-topbar">
+        <button className="mobile-toggle student-menu-toggle" onClick={() => setMobileMenu(!mobileMenu)} aria-label="Menu">
+          {mobileMenu ? <X /> : <Menu />}
         </button>
-
-        <button className="brand" onClick={() => navigate("home")}>
-          <span className="brand-mark">A<span>✓</span></span>
-          <span>
-            APROVEI
-            <small>SUA APROVAÇÃO COMEÇA AQUI</small>
-          </span>
+        <button className="brand student-brand" onClick={() => go("dashboard")}>
+          <span className="brand-symbol">A<span>✓</span></span>
+          <span className="brand-words">APROVEI<small>ÁREA DO ALUNO</small></span>
         </button>
-
-        <div className="top-actions">
-          {session ? (
-            <>
-              <span className="user-email">{session.user.email}</span>
-              <button
-                className="icon-button"
-                onClick={() => supabase?.auth.signOut()}
-                title="Sair"
-              >
-                <LogOut size={18} />
-              </button>
-            </>
-          ) : (
-            <button className="login-link" onClick={() => navigate("account")}>
-              <LogIn size={17} /> Entrar
-            </button>
-          )}
+        <div className="student-user">
+          <span>{session?.user?.email || "Área do aluno"}</span>
+          <button className="logout-button" onClick={handleSignOut} title="Sair"><LogOut size={18} /></button>
         </div>
       </header>
 
-      <div className="layout">
-        <aside className={"sidebar " + (mobile ? "open" : "")}>
-          <div className="side-label">ÁREA DO ALUNO</div>
-
-          {nav.map(([label, key]) => (
-            <button
-              key={key}
-              className={"nav-item " + (page === key ? "active" : "")}
-              onClick={() => navigate(key)}
-            >
-              {key === "home" ? <ChartNoAxesCombined /> :
-               key === "contests" ? <Search /> :
-               key === "planner" ? <CalendarDays /> :
-               key === "videos" ? <Video /> : <Clock3 />}
-              {label}
+      <div className="student-layout">
+        <aside className={mobileMenu ? "student-sidebar open" : "student-sidebar"}>
+          <span className="sidebar-caption">MENU PRINCIPAL</span>
+          {navItems.map(item => (
+            <button key={item.id} className={page === item.id ? "student-nav active" : "student-nav"}
+              onClick={() => go(item.id)}>
+              {item.icon}<span>{item.label}</span>
             </button>
           ))}
-
-          <div className="sidebar-bottom">
-            <ShieldCheck />
-            <span>
-              Estude com estratégia.
-              <br />
-              <b>Conquiste sua aprovação.</b>
-            </span>
+          <div className="sidebar-help">
+            <span><Headphones size={19} /></span>
+            <b>Continue avançando.</b>
+            <small>Pequenos passos, todos os dias.</small>
           </div>
+          <button className="back-site" onClick={() => go("landing")}><ChevronLeft size={16} /> Página inicial</button>
         </aside>
 
-        <main className="content">
-          {page === "home" && (
+        <main className="student-content">
+          {page === "dashboard" && (
             <>
-              <section className="hero">
-                <div className="hero-copy">
-                  <span className="eyebrow">SUA JORNADA COMEÇA AGORA</span>
-                  <h1>
-                    Seu próximo cargo público começa com <em>APROVEI.</em>
-                  </h1>
-                  <p>
-                    Organize seus estudos, acompanhe editais e transforme
-                    sua preparação em resultados.
-                  </p>
-
-                  <div className="hero-actions">
-                    <button
-                      className="primary"
-                      onClick={() => navigate(session ? "planner" : "account")}
-                    >
-                      {session ? "Registrar meus estudos" : "Começar gratuitamente"}
-                      <ArrowRight size={17} />
-                    </button>
-                    <button
-                      className="secondary"
-                      onClick={() => navigate("contests")}
-                    >
-                      Ver concursos abertos
-                    </button>
-                  </div>
-
-                  <div className="hero-proof">
-                    <span><CheckCircle2 /> Planejamento</span>
-                    <span><CheckCircle2 /> Editais</span>
-                    <span><CheckCircle2 /> Videoaulas</span>
-                  </div>
-                </div>
-
-                <div className="hero-visual">
-                  <div className="orbit orbit-one" />
-                  <div className="orbit orbit-two" />
-                  <div className="hero-badge"><GraduationCap size={45} /></div>
-                  <div className="floating-card card-top">
-                    <span>FOCO</span><b>Disciplina diária</b>
-                  </div>
-                  <div className="floating-card card-bottom">
-                    <span>PROGRESSO</span><b>Um passo por vez ✓</b>
-                  </div>
-                </div>
-              </section>
-
-              <div className="metric-grid">
-                <Metric
-                  icon={<Clock3 />}
-                  value={session ? hours + "h " + rest + "min" : "—"}
-                  label="Tempo registrado"
-                />
-                <Metric
-                  icon={<BookOpen />}
-                  value={String(sessions.length)}
-                  label="Sessões de estudo"
-                />
-                <Metric
-                  icon={<Target />}
-                  value={String(contests.length)}
-                  label="Editais disponíveis"
-                />
+              <div className="student-welcome">
+                <div><span className="eyebrow">BEM-VINDO AO APROVEI</span><h1>Sua preparação em movimento.</h1>
+                  <p>Organize seu próximo passo e mantenha o foco no seu objetivo.</p></div>
+                <span className="welcome-icon"><GraduationCap size={35} /></span>
               </div>
-
-              <section className="feature-grid">
-                <Feature icon={<Search />} title="Concursos em todo o Brasil"
-                  text="Pesquise oportunidades por estado, município e escolaridade." />
-                <Feature icon={<CalendarDays />} title="Planejamento de estudos"
-                  text="Registre sessões e acompanhe seu tempo dedicado." />
-                <Feature icon={<Video />} title="Videoaulas organizadas"
-                  text="Acesse aulas públicas do YouTube por assunto." />
-                <Feature icon={<ChartNoAxesCombined />} title="Acompanhe sua evolução"
-                  text="Visualize sua rotina e mantenha o foco." />
-              </section>
-
-              <section className="plans">
-                <span className="eyebrow">PLANOS APROVEI</span>
-                <h2>Escolha seu ritmo de preparação</h2>
-                <p>
-                  Valores da proposta inicial. A cobrança ainda será
-                  integrada ao Mercado Pago.
-                </p>
-                <div className="plan-grid">
-                  <Plan name="Essencial" price="14,90"
-                    desc="Para organizar sua rotina." />
-                  <Plan name="Avançado" price="24,90"
-                    desc="Para aprofundar a preparação." featured />
-                  <Plan name="Aprovação" price="39,90"
-                    desc="Para uma experiência completa." />
-                </div>
+              <div className="student-metrics">
+                <Metric icon={<Clock3 />} value={`${totalHours}h ${remainingMinutes}min`} label="Tempo registrado" />
+                <Metric icon={<BookOpen />} value={String(sessions.length)} label="Sessões de estudo" />
+                <Metric icon={<FileText />} value={String(contests.length)} label="Concursos disponíveis" />
+              </div>
+              <div className="student-action-grid">
+                <ActionCard icon={<CalendarDays />} title="Registrar estudo" text="Adicione uma nova sessão à sua rotina." onClick={() => go("planner")} />
+                <ActionCard icon={<Search />} title="Buscar concursos" text="Explore as oportunidades disponíveis." onClick={() => go("contests")} />
+                <ActionCard icon={<Video />} title="Assistir videoaulas" text="Acesse o catálogo de conteúdos." onClick={() => go("videos")} />
+              </div>
+              <section className="student-panel">
+                <div className="panel-heading"><div><span className="eyebrow">SEU HISTÓRICO</span><h2>Estudos recentes</h2></div>
+                  <button onClick={() => go("progress")}>Ver desempenho <ArrowRight size={15} /></button></div>
+                {sessions.length === 0 ? <Empty text="Você ainda não registrou sessões de estudo. Comece hoje mesmo!" /> :
+                  <div className="history-list">{sessions.slice(0, 5).map(item => (
+                    <article className="history-item" key={item.id}>
+                      <div><b>{subjects.find(subject => subject.id === item.subject_id)?.name || "Estudo livre"}</b>
+                        <p>{item.notes || "Sessão de estudo"}</p><small>{new Date(item.studied_at).toLocaleString("pt-BR")}</small></div>
+                      <strong>{item.duration_minutes} min</strong>
+                    </article>
+                  ))}</div>}
               </section>
             </>
           )}
 
           {page === "contests" && (
             <section>
-              <Heading eyebrow="OPORTUNIDADES" title="Concursos públicos"
-                subtitle="Encontre editais federais, estaduais e municipais." />
-
-              <div className="filters">
-                <label className="searchbox">
-                  <Search size={18} />
-                  <input
-                    value={search}
-                    onChange={e => setSearch(e.target.value)}
-                    placeholder="Buscar órgão, cargo ou município"
-                  />
-                </label>
-                <select
-                  value={stateFilter}
-                  onChange={e => setStateFilter(e.target.value)}
-                >
-                  {states.map(s => <option key={s}>{s}</option>)}
+              <PageHeading eyebrow="OPORTUNIDADES" title="Concursos públicos" subtitle="Encontre oportunidades federais, estaduais e municipais." />
+              <div className="student-filters">
+                <label className="student-search"><Search size={18} /><input value={search} onChange={event => setSearch(event.target.value)} placeholder="Buscar órgão, cargo ou município" /></label>
+                <select value={stateFilter} onChange={event => setStateFilter(event.target.value)}>
+                  {states.map(state => <option key={state}>{state}</option>)}
                 </select>
               </div>
-
-              {!isSupabaseConfigured ? (
-                <Notice text="Configure as variáveis do Supabase para carregar os editais." />
-              ) : filtered.length === 0 ? (
-                <Empty text="Nenhum concurso aberto cadastrado ainda. Os editais aparecerão aqui quando forem cadastrados." />
-              ) : (
-                <div className="contest-grid">
-                  {filtered.map(c => (
-                    <article className="contest-card" key={c.id}>
-                      <span className="status-pill">
-                        {c.status === "open" ? "Inscrições abertas" : "Em breve"}
-                      </span>
-                      <h3>{c.title}</h3>
-                      <p><MapPin size={15} />{c.city || "Local não informado"} / {c.state || "BR"}</p>
-                      <p><GraduationCap size={15} />{c.level || "Escolaridade não informada"}</p>
-                      {c.deadline && (
-                        <p>
-                          <CalendarDays size={15} />
-                          Até {new Date(c.deadline + "T12:00:00").toLocaleDateString("pt-BR")}
-                        </p>
-                      )}
-                      {c.official_url && (
-                        <a href={c.official_url} target="_blank" rel="noreferrer">
-                          Consultar edital <ArrowRight size={15} />
-                        </a>
-                      )}
+              {!isSupabaseConfigured ? <Notice text="A conexão com o Supabase não está configurada." /> :
+                filteredContests.length === 0 ? <Empty text="Nenhum concurso aberto cadastrado no momento. As oportunidades serão exibidas aqui quando forem publicadas." /> :
+                  <div className="contest-grid">{filteredContests.map(contest => (
+                    <article className="contest-card" key={contest.id}>
+                      <span className="status-pill">{contest.status === "open" ? "Inscrições abertas" : "Em breve"}</span>
+                      <h3>{contest.title}</h3>
+                      <p><Target size={15} /> {contest.city || "Local não informado"} / {contest.state || "Brasil"}</p>
+                      <p><GraduationCap size={15} /> {contest.level || "Escolaridade não informada"}</p>
+                      {contest.deadline && <p><CalendarDays size={15} /> Até {new Date(contest.deadline + "T12:00:00").toLocaleDateString("pt-BR")}</p>}
+                      {contest.official_url && <a href={contest.official_url} target="_blank" rel="noreferrer">Consultar fonte oficial <ArrowRight size={15} /></a>}
                     </article>
-                  ))}
-                </div>
-              )}
+                  ))}</div>}
             </section>
           )}
 
           {page === "planner" && (
             <section>
-              <Heading eyebrow="ROTINA E CONSTÂNCIA" title="Meu planejamento"
-                subtitle="Registre o que estudou e construa seu histórico de preparação." />
-
-              {!session ? (
-                <Notice text="Entre na sua conta para registrar e consultar suas sessões de estudo." />
-              ) : (
+              <PageHeading eyebrow="ROTINA E CONSTÂNCIA" title="Meu planejamento" subtitle="Registre o que estudou e construa seu histórico de preparação." />
+              {!session ? <Notice text="Entre na sua conta para registrar suas sessões de estudo." /> : (
                 <>
-                  <form className="session-form" onSubmit={addStudySession}>
-                    <h3><Plus size={19} /> Registrar sessão de estudo</h3>
-
-                    <label>
-                      Disciplina
-                      <select value={subjectId} onChange={e => setSubjectId(e.target.value)}>
+                  <form className="student-form" onSubmit={addStudySession}>
+                    <h2><CalendarDays size={20} /> Registrar sessão de estudo</h2>
+                    <label>Disciplina
+                      <select value={subjectId} onChange={event => setSubjectId(event.target.value)}>
                         <option value="">Selecione uma disciplina</option>
-                        {subjects.map(s => (
-                          <option key={s.id} value={s.id}>{s.name}</option>
-                        ))}
+                        {subjects.map(subject => <option key={subject.id} value={subject.id}>{subject.name}</option>)}
                       </select>
                     </label>
-
-                    <label>
-                      Duração em minutos
-                      <input type="number" min="1" max="1440" required
-                        value={minutes} onChange={e => setMinutes(e.target.value)} />
+                    <label>Duração em minutos
+                      <input type="number" min="1" max="1440" required value={minutes} onChange={event => setMinutes(event.target.value)} />
                     </label>
-
-                    <label>
-                      O que você estudou? (opcional)
-                      <textarea value={notes} onChange={e => setNotes(e.target.value)}
-                        placeholder="Ex.: concordância verbal, questões de provas anteriores..." />
+                    <label>O que você estudou? (opcional)
+                      <textarea value={notes} onChange={event => setNotes(event.target.value)} placeholder="Ex.: direito constitucional, questões de provas anteriores..." />
                     </label>
-
-                    <button className="primary" type="submit">
-                      Salvar sessão <CheckCircle2 size={17} />
-                    </button>
-                    {message && <p className="form-message">{message}</p>}
+                    <button className="button button-primary" type="submit">Salvar sessão <CheckCircle2 size={17} /></button>
+                    {message && <p className="form-feedback">{message}</p>}
                   </form>
-
-                  <h3 className="section-subtitle">Histórico recente</h3>
-                  {sessions.length === 0 ? (
-                    <Empty text="Você ainda não registrou sessões. Comece adicionando seu primeiro estudo!" />
-                  ) : (
-                    <div className="history-list">
-                      {sessions.map(s => (
-                        <article key={s.id} className="history-item">
-                          <div>
-                            <b>{subjects.find(x => x.id === s.subject_id)?.name || "Estudo livre"}</b>
-                            <p>{s.notes || "Sessão de estudo"}</p>
-                            <small>{new Date(s.studied_at).toLocaleString("pt-BR")}</small>
-                          </div>
-                          <strong>{s.duration_minutes} min</strong>
+                  <section className="student-panel">
+                    <div className="panel-heading"><div><span className="eyebrow">SEU HISTÓRICO</span><h2>Sessões registradas</h2></div></div>
+                    {sessions.length === 0 ? <Empty text="Você ainda não registrou sessões. Adicione seu primeiro estudo acima." /> :
+                      <div className="history-list">{sessions.map(item => (
+                        <article className="history-item" key={item.id}>
+                          <div><b>{subjects.find(subject => subject.id === item.subject_id)?.name || "Estudo livre"}</b>
+                            <p>{item.notes || "Sessão de estudo"}</p><small>{new Date(item.studied_at).toLocaleString("pt-BR")}</small></div>
+                          <strong>{item.duration_minutes} min</strong>
                         </article>
-                      ))}
-                    </div>
-                  )}
+                      ))}</div>}
+                  </section>
                 </>
               )}
             </section>
           )}
-                  
+
           {page === "videos" && (
             <section>
-              <Heading eyebrow="SALA DE AULA" title="Videoaulas"
-                subtitle="Aulas publicadas organizadas para sua preparação." />
-
-              {lessons.length === 0 ? (
-                <Empty text="Ainda não há videoaulas publicadas. Quando forem adicionadas ao catálogo, aparecerão aqui." />
-              ) : (
-                <div className="video-grid">
-                  {lessons.map(l => (
-                    <article className="video-card" key={l.id}>
-                      <a
-                        className="video-thumb"
-                        href={"https://www.youtube.com/watch?v=" + l.youtube_video_id}
-                        target="_blank"
-                        rel="noreferrer"
-                      >
-                        <img
-                          src={"https://img.youtube.com/vi/" + l.youtube_video_id + "/hqdefault.jpg"}
-                          alt="Miniatura da videoaula"
-                        />
-                        <PlayCircle />
-                      </a>
-                      <h3>{l.title}</h3>
-                      <p>{l.channel_name || "YouTube"}</p>
-                    </article>
-                  ))}
-                </div>
-              )}
+              <PageHeading eyebrow="SALA DE AULA" title="Videoaulas" subtitle="Conteúdos públicos organizados para apoiar sua preparação." />
+              {lessons.length === 0 ? <Empty text="Ainda não há videoaulas publicadas no catálogo. Quando forem cadastradas, aparecerão aqui." /> :
+                <div className="video-grid">{lessons.map(lesson => (
+                  <article className="video-card" key={lesson.id}>
+                    <a className="video-thumb" href={`https://www.youtube.com/watch?v=${lesson.youtube_video_id}`} target="_blank" rel="noreferrer">
+                      <img src={`https://img.youtube.com/vi/${lesson.youtube_video_id}/hqdefault.jpg`} alt={`Miniatura: ${lesson.title}`} />
+                      <span><Play size={25} fill="currentColor" /></span>
+                    </a>
+                    <h3>{lesson.title}</h3><p>{lesson.channel_name || "YouTube"}</p>
+                  </article>
+                ))}</div>}
             </section>
           )}
 
           {page === "progress" && (
             <section>
-              <Heading eyebrow="SUA EVOLUÇÃO" title="Meu desempenho"
-                subtitle="Acompanhe o tempo que você está dedicando à aprovação." />
-              <div className="metric-grid">
-                <Metric icon={<Clock3 />} value={hours + "h " + rest + "min"}
-                  label="Tempo total estudado" />
-                <Metric icon={<BookOpen />} value={String(sessions.length)}
-                  label="Sessões registradas" />
-                <Metric icon={<Target />} value={String(subjects.length)}
-                  label="Disciplinas disponíveis" />
-              </div>
-              {!session && (
-                <Notice text="Entre na sua conta para visualizar seus dados de desempenho." />
-              )}
-            </section>
-          )}
-
-          {page === "account" && (
-            <section className="account-section">
-              <Heading eyebrow="ÁREA DO ALUNO"
-                title={mode === "login" ? "Bem-vindo de volta" : "Crie sua conta"}
-                subtitle="Acesse seu espaço de preparação no APROVEI." />
-
-              <form className="session-form auth-form" onSubmit={handleAuth}>
-                <label>
-                  E-mail
-                  <input type="email" required value={email}
-                    onChange={e => setEmail(e.target.value)}
-                    placeholder="voce@email.com" />
-                </label>
-
-                <label>
-                  Senha
-                  <input type="password" required minLength={6}
-                    value={password} onChange={e => setPassword(e.target.value)}
-                    placeholder="Mínimo de 6 caracteres" />
-                </label>
-
-                <button className="primary full" type="submit">
-                  {mode === "login" ? "Entrar" : "Criar minha conta"}
-                  <ArrowRight size={17} />
-                </button>
-
-                {authMessage && <p className="form-message">{authMessage}</p>}
-
-                <button
-                  className="text-button"
-                  type="button"
-                  onClick={() => {
-                    setMode(mode === "login" ? "signup" : "login");
-                    setAuthMessage("");
-                  }}
-                >
-                  {mode === "login"
-                    ? "Ainda não tem conta? Cadastre-se"
-                    : "Já tem conta? Entrar"}
-                </button>
-              </form>
-            </section>
-          )}
-        </main>
-      </div>
-    </div>
-  );
-}
-
-function Metric({ icon, value, label }: {
-  icon: ReactNode;
-  value: string;
-  label: string;
-}) {
-  return (
-    <article className="metric-card">
-      <span className="metric-icon">{icon}</span>
-      <strong>{value}</strong>
-      <small>{label}</small>
-    </article>
-  );
-}
-
-function Feature({ icon, title, text }: {
-  icon: ReactNode;
-  title: string;
-  text: string;
-}) {
-  return (
-    <article className="feature-card">
-      <span>{icon}</span>
-      <h3>{title}</h3>
-      <p>{text}</p>
-    </article>
-  );
-}
-
-function Plan({ name, price, desc, featured = false }: {
-  name: string;
-  price: string;
-  desc: string;
-  featured?: boolean;
-}) {
-  return (
-    <article className={"plan-card " + (featured ? "featured" : "")}>
-      <h3>{name}</h3>
-      <div className="plan-price">
-        <small>R$</small> {price}<span>/mês</span>
-      </div>
-      <p>{desc}</p>
-      <ul>
-        <li>Área do aluno</li>
-        <li>Organização de estudos</li>
-        <li>Acompanhamento da rotina</li>
-      </ul>
-      <button
-        className={featured ? "primary" : "secondary"}
-        onClick={() => alert("A assinatura pelo Mercado Pago será disponibilizada em uma próxima etapa.")}
-      >
-        Escolher plano <ArrowRight size={16} />
-      </button>
-    </article>
-  );
-}
-
-function Heading({ eyebrow, title, subtitle }: {
-  eyebrow: string;
-  title: string;
-  subtitle: string;
-}) {
-  return (
-    <div className="page-heading">
-      <span className="eyebrow">{eyebrow}</span>
-      <h1>{title}</h1>
-      <p>{subtitle}</p>
-    </div>
-  );
-}
-
-function Notice({ text }: { text: string }) {
-  return (
-    <div className="notice">
-      <ShieldCheck />
-      <p>{text}</p>
-    </div>
-  );
-}
-
-function Empty({ text }: { text: string }) {
-  return (
-    <div className="empty-state">
-      <BookOpen />
-      <p>{text}</p>
-    </div>
-  );
-              }
-
+              <PageHe
