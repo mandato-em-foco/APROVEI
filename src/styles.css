@@ -4,8 +4,8 @@ import type { FormEvent, ReactNode } from "react";
 import {
   ArrowRight, BookOpen, CalendarDays, Check, CheckCircle2, ChevronDown,
   ChevronLeft, ChevronRight, Clock3, FileText, GraduationCap, Headphones,
-  LayoutDashboard, LogOut, Menu, Play, Search, ShieldCheck,
-  Target, TrendingUp, Users, Video, X, Zap, BookMarked
+  LayoutDashboard, LogIn, LogOut, Menu, Play, Search, ShieldCheck,
+  Target, TrendingUp, Users, Video, X, Zap, Award, BookMarked
 } from "lucide-react";
 import { isSupabaseConfigured, supabase } from "./lib/supabase";
 
@@ -121,6 +121,10 @@ const states = [
   "GO", "MA", "MT", "MS", "MG", "PA", "PB", "PR", "PE", "PI", "RJ",
   "RN", "RS", "RO", "RR", "SC", "SP", "SE", "TO"
 ];
+
+function money(value: string) {
+  return `R$ ${value}`;
+}
 
 export default function App() {
   const [page, setPage] = useState<Page>("landing");
@@ -390,7 +394,7 @@ export default function App() {
               <FeatureCard icon={<CalendarDays />} number="02" title="Organize sua rotina"
                 text="Registre seus estudos, acompanhe o tempo dedicado e construa um histórico de preparação." />
               <FeatureCard icon={<Video />} number="03" title="Acesse videoaulas"
-                text="Encontre conteúdos públicos do YouTube organizados por disciplina." />
+                text="Encontre conteúdos públicos organizados por disciplina para apoiar sua aprendizagem." />
               <FeatureCard icon={<TrendingUp />} number="04" title="Acompanhe sua evolução"
                 text="Visualize seus registros e perceba como a consistência fortalece sua preparação." />
             </div>
@@ -451,7 +455,8 @@ export default function App() {
 
             <div className="billing-switch" aria-label="Período de contratação">
               <button className={billing === "annual" ? "active" : ""} onClick={() => setBilling("annual")}>
-                Anual <span>12 meses</span>
+                Anual 
+                                  <span>12 meses</span>
               </button>
               <button className={billing === "semiannual" ? "active" : ""} onClick={() => setBilling("semiannual")}>
                 Semestral <span>6 meses</span>
@@ -504,8 +509,10 @@ export default function App() {
               <div className="faq-list">
                 {faqs.map((item, index) => (
                   <article className={faqOpen === index ? "faq-item open" : "faq-item"} key={item.q}>
-                    <button onClick={() => setFaqOpen(faqOpen === index ? null : index)} aria-expanded={faqOpen === index}>
-                      <span>{item.q}</span><ChevronDown size={19} />
+                    <button onClick={() => setFaqOpen(faqOpen === index ? null : index)}
+                      aria-expanded={faqOpen === index}>
+                      <span>{item.q}</span>
+                      <ChevronDown size={19} />
                     </button>
                     {faqOpen === index && <p>{item.a}</p>}
                   </article>
@@ -765,32 +772,25 @@ export default function App() {
 
           {page === "progress" && (
             <section>
-              <PageHeading eyebrow="SEU DESEMPENHO" title="Minha evolução" subtitle="Acompanhe o tempo que você dedicou à sua preparação." />
+              <PageHeading eyebrow="SUA EVOLUÇÃO" title="Meu desempenho" subtitle="Acompanhe sua dedicação e mantenha a consistência." />
               <div className="student-metrics">
-                <Metric icon={<Clock3 />} value={`${totalHours}h ${remainingMinutes}min`} label="Tempo total registrado" />
+                <Metric icon={<Clock3 />} value={`${totalHours}h ${remainingMinutes}min`} label="Tempo total de estudo" />
                 <Metric icon={<BookOpen />} value={String(sessions.length)} label="Sessões concluídas" />
-                <Metric icon={<TrendingUp />} value={sessions.length ? "Em construção" : "Comece hoje"} label="Sua constância" />
+                <Metric icon={<TrendingUp />} value={String(sessions.length ? Math.round(totalMinutes / sessions.length) : 0)} label="Minutos por sessão" />
               </div>
               <section className="student-panel">
-                <div className="panel-heading">
-                  <div><span className="eyebrow">HISTÓRICO</span><h2>Suas últimas sessões</h2></div>
-                </div>
-                {sessions.length === 0 ? (
-                  <Empty text="Registre seus estudos no planejamento para acompanhar sua evolução aqui." />
-                ) : (
-                  <div className="history-list">
-                    {sessions.map(item => (
-                      <article className="history-item" key={item.id}>
-                        <div>
-                          <b>{subjects.find(subject => subject.id === item.subject_id)?.name || "Estudo livre"}</b>
-                          <p>{item.notes || "Sessão de estudo"}</p>
-                          <small>{new Date(item.studied_at).toLocaleString("pt-BR")}</small>
-                        </div>
-                        <strong>{item.duration_minutes} min</strong>
-                      </article>
-                    ))}
-                  </div>
-                )}
+                <div className="panel-heading"><div><span className="eyebrow">HISTÓRICO</span><h2>Suas sessões de estudo</h2></div></div>
+                {sessions.length === 0 ? <Empty text="Quando você registrar seus estudos, seu histórico aparecerá aqui." /> :
+                  <div className="history-list">{sessions.map(item => (
+                    <article className="history-item" key={item.id}>
+                      <div>
+                        <b>{subjects.find(subject => subject.id === item.subject_id)?.name || "Estudo livre"}</b>
+                        <p>{item.notes || "Sessão de estudo"}</p>
+                        <small>{new Date(item.studied_at).toLocaleString("pt-BR")}</small>
+                      </div>
+                      <strong>{item.duration_minutes} min</strong>
+                    </article>
+                  ))}</div>}
               </section>
             </section>
           )}
@@ -800,13 +800,19 @@ export default function App() {
   );
 }
 
-function FeatureCard({ icon, number, title, text }: { icon: ReactNode; number: string; title: string; text: string }) {
+function Metric({ icon, value, label }: { icon: ReactNode; value: string; label: string }) {
+  return (
+    <article className="metric-card">
+      <span className="metric-icon">{icon}</span>
+      <div><strong>{value}</strong><small>{label}</small></div>
+    </article>
+  );
+}
+
+function FeatureCard({ icon, title, text }: { icon: ReactNode; title: string; text: string }) {
   return (
     <article className="feature-card">
-      <div className="feature-card-top">
-        <span className="feature-icon">{icon}</span>
-        <small>{number}</small>
-      </div>
+      <span className="feature-icon">{icon}</span>
       <h3>{title}</h3>
       <p>{text}</p>
     </article>
@@ -817,36 +823,34 @@ function Audience({ icon, title, text }: { icon: ReactNode; title: string; text:
   return (
     <article className="audience-card">
       <span>{icon}</span>
-      <h3>{title}</h3>
-      <p>{text}</p>
+      <div><h3>{title}</h3><p>{text}</p></div>
     </article>
   );
 }
 
-function Metric({ icon, value, label }: { icon: ReactNode; value: string; label: string }) {
-  return (
-    <article className="student-metric">
-      <span>{icon}</span>
-      <strong>{value}</strong>
-      <small>{label}</small>
-    </article>
-  );
-}
-
-function ActionCard({ icon, title, text, onClick }: { icon: ReactNode; title: string; text: string; onClick: () => void }) {
+function ActionCard({ icon, title, text, onClick }: {
+  icon: ReactNode;
+  title: string;
+  text: string;
+  onClick: () => void;
+}) {
   return (
     <button className="action-card" onClick={onClick}>
-      <span>{icon}</span>
-      <b>{title}</b>
-      <small>{text}</small>
-      <i><ArrowRight size={16} /></i>
+      <span className="action-icon">{icon}</span>
+      <strong>{title}</strong>
+      <p>{text}</p>
+      <ArrowRight size={18} />
     </button>
   );
 }
 
-function PageHeading({ eyebrow, title, subtitle }: { eyebrow: string; title: string; subtitle: string }) {
+function PageHeading({ eyebrow, title, subtitle }: {
+  eyebrow: string;
+  title: string;
+  subtitle: string;
+}) {
   return (
-    <div className="student-page-heading">
+    <div className="page-heading">
       <span className="eyebrow">{eyebrow}</span>
       <h1>{title}</h1>
       <p>{subtitle}</p>
@@ -856,8 +860,8 @@ function PageHeading({ eyebrow, title, subtitle }: { eyebrow: string; title: str
 
 function Empty({ text }: { text: string }) {
   return (
-    <div className="student-empty">
-      <BookOpen size={24} />
+    <div className="empty-state">
+      <span><BookOpen size={25} /></span>
       <p>{text}</p>
     </div>
   );
@@ -865,10 +869,9 @@ function Empty({ text }: { text: string }) {
 
 function Notice({ text }: { text: string }) {
   return (
-    <div className="student-notice">
-      <ShieldCheck size={20} />
+    <div className="notice">
+      <span><ShieldCheck size={20} /></span>
       <p>{text}</p>
     </div>
   );
-}
-
+                     }
