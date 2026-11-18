@@ -14,7 +14,7 @@ insert into public.contests (
 select
   'Prefeitura de Saquarema - RJ — Processo Seletivo Público Saúde 001/2026',
   'municipal','RJ','Saquarema','Nível médio','open',217,
-  3242.00,3242.00,date '2026-11-12',date '2026-12-22',date '2027-01-31',
+  3242.00,3242.00,null,date '2026-12-22',date '2027-01-31',
   'https://www.saquarema.rj.gov.br/concursos/',
   'https://www.ibam-concursos.org.br/',
   'https://www.saquarema.rj.gov.br/prefeitura-abre-processo-seletivo-publico-para-vagas-na-area-da-saude/',
