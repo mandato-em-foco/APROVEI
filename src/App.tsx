@@ -743,7 +743,13 @@ export default function App() {
               </div>
 
               {filteredContests.length === 0 ? (
-                <Empty text="Nenhuma oportunidade encontrada com esses filtros. Novas informações poderão aparecer quando forem cadastradas." />
+                <div className="student-panel contest-empty-panel">
+                  <span className="welcome-icon"><Search /></span>
+                  <span className="eyebrow">CATÁLOGO EM ATUALIZAÇÃO</span>
+                  <h2>Nenhum concurso cadastrado ainda</h2>
+                  <p>Não vamos inventar oportunidades nem exibir editais sem fonte oficial. Enquanto o catálogo é alimentado com dados verificados, você já pode montar seu plano de estudos por disciplina.</p>
+                  <button className="button button-primary" onClick={() => go("planner")}>Começar a planejar meus estudos <ArrowRight size={16} /></button>
+                </div>
               ) : (
                 <div className="contest-grid">
                   {filteredContests.map(contest => (
