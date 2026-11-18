@@ -2767,3 +2767,10 @@ r(--mint-dark); }
   font-size: 0.78rem;
   font-weight: 700;
 }
+
+
+/* Seleção de cargo e conteúdo específico do edital no planejador */
+.ap-position-field{display:grid;gap:8px}
+.ap-position-field>small{color:#71848b;font-size:11px;line-height:1.6}
+.ap-position-loading,.ap-position-hint{margin:0;padding:13px 15px;border:1px solid #aab8bf;border-radius:12px;background:#f5f8fa;color:#526b78;font-size:12px;line-height:1.7}
+.ap-position-field select{width:100%}
