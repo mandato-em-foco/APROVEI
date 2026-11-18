@@ -14,7 +14,8 @@ begin
   if not exists (select 1 from public.contests where title ilike '%São João de Meriti%' and title ilike '%01/2026%') then
     raise exception 'Concurso São João de Meriti 01/2026 não encontrado em public.contests.';
   end if;
-end $$;
+end;
+$;
 
 -- Cargos/empregos do CRP-05.
 insert into public.contest_positions (contest_id,title,level,source_url,notes)
