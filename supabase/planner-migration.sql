@@ -14,18 +14,21 @@ create table if not exists public.study_plans (
   weekly_goal_minutes integer not null default 1 check (weekly_goal_minutes > 0),
   is_active boolean not null default true,
   created_at timestamptz not null default now(),
-  updated_at timestamptz not null default now()
+  updated_at timestamptz not null default now(),
+  unique (id, user_id)
 );
 
 create table if not exists public.study_plan_items (
   id uuid primary key default gen_random_uuid(),
-  plan_id uuid not null references public.study_plans(id) on delete cascade,
+  plan_id uuid not null,
   user_id uuid not null references auth.users(id) on delete cascade,
   subject_id uuid not null references public.subjects(id) on delete restrict,
   weekday smallint not null check (weekday between 0 and 6),
   duration_minutes integer not null check (duration_minutes between 1 and 1440),
   sort_order integer not null default 0,
-  created_at timestamptz not null default now()
+  created_at timestamptz not null default now(),
+  foreign key (plan_id, user_id)
+    references public.study_plans(id, user_id) on delete cascade
 );
 
 create table if not exists public.contest_subjects (
