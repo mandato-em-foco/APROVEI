@@ -2736,3 +2736,25 @@ p,li,label,button,input,select,textarea,small,
   .student-panel,.metric-card,.contest-card,.lesson-card{padding:20px 17px}
   .ap-performance-card{padding:17px 15px}
 }
+
+
+/* Complemento: cartões da página inicial e títulos também recebem o refinamento */
+h1,h2,h3,h4,h5,h6,.brand-words,.text-link,.topbar-action,
+.feature-card h3,.audience-card h3,.plan-name,.pricing-price strong,
+.demo-panel h3,.preview-body h3,.faq-item>button,.student-topbar h1,
+.page-heading h1,.page-heading h2,.ap-planner-intro h2,
+.ap-saved-heading h2,.ap-today-heading h2,.ap-performance-chart-heading h2{
+  font-size:calc(1em + 1px);
+}
+.feature-card,.audience-card,.pricing-card,.demo-preview,.demo-panel,
+.preview-body,.faq-item,.faq-list,.billing-switch,.plan-card,
+.dashboard-preview,.student-panel,.contest-empty-panel{
+  border:2px solid var(--ap-outline)!important;
+}
+.feature-card:nth-child(4n+1),.audience-card:nth-child(4n+1),.pricing-card:nth-child(3n+1){border-top:5px solid var(--ap-coral)!important}
+.feature-card:nth-child(4n+2),.audience-card:nth-child(4n+2),.pricing-card:nth-child(3n+2){border-top:5px solid var(--ap-violet)!important}
+.feature-card:nth-child(4n+3),.audience-card:nth-child(4n+3),.pricing-card:nth-child(3n+3){border-top:5px solid var(--ap-aqua)!important}
+.feature-card:nth-child(4n+4),.audience-card:nth-child(4n+4){border-top:5px solid var(--ap-gold)!important}
+.demo-preview,.demo-panel{border-color:#526b78!important;box-shadow:0 14px 32px rgba(27,48,61,.1)}
+.faq-item{border-left:2px solid #aab8bf!important;border-right:2px solid #aab8bf!important;padding-left:14px;padding-right:14px}
+.billing-switch{border-color:#526b78!important}
