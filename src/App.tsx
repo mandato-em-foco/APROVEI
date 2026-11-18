@@ -133,7 +133,7 @@ export default function App() {
   const [faqOpen, setFaqOpen] = useState<number | null>(0);
   const [billing, setBilling] = useState<"annual" | "semiannual" | "quarterly">("annual");
   const [session, setSession] = useState<any>(null);
-  const [rememberMe, setRememberMe] = useState(true);
+  const [rememberMe, setRememberMe] = useState(() => typeof window === "undefined" || window.localStorage.getItem("aprovei-remember-session") !== "false");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
