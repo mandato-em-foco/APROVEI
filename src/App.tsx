@@ -155,6 +155,7 @@ export default function App() {
   const [notes, setNotes] = useState("");
   const [message, setMessage] = useState("");
   const [completionRefreshKey, setCompletionRefreshKey] = useState(0);
+  const [activePlanWeeklyGoal, setActivePlanWeeklyGoal] = useState(0);
 
   async function refresh(userId?: string) {
     if (!supabase) return;
@@ -200,6 +201,14 @@ export default function App() {
         .limit(100);
 
       if (result.data) setSessions(result.data as StudySession[]);
+
+      const planResult = await supabase.from("study_plans")
+        .select("weekly_goal_minutes")
+        .eq("user_id", userId)
+        .eq("is_active", true);
+      if (planResult.data) {
+        setActivePlanWeeklyGoal(planResult.data.reduce((sum, plan) => sum + (Number(plan.weekly_goal_minutes) || 0), 0));
+      }
     }
   }
 
@@ -366,6 +375,15 @@ export default function App() {
     return { label: date.toLocaleDateString("pt-BR", { weekday: "short" }).replace(".", ""), minutes };
   });
   const maxWeekDayMinutes = Math.max(60, ...weekDayStats.map(day => day.minutes));
+  const weeklyGoalPercent = activePlanWeeklyGoal > 0 ? Math.min(100, Math.round(weekMinutes / activePlanWeeklyGoal * 100)) : 0;
+  const subjectStudyStats = Object.values(weekSessions.reduce((groups, item) => {
+    const key = item.subject_id || "free";
+    if (!groups[key]) groups[key] = { id: key, name: subjects.find(subject => subject.id === item.subject_id)?.name || "Estudo livre", minutes: 0, sessions: 0 };
+    groups[key].minutes += item.duration_minutes;
+    groups[key].sessions += 1;
+    return groups;
+  }, {} as Record<string, { id: string; name: string; minutes: number; sessions: number }>)).sort((a, b) => b.minutes - a.minutes);
+  const maxSubjectMinutes = Math.max(1, ...subjectStudyStats.map(item => item.minutes));
     if (page === "landing") {
     return (
       <div className="site-shell">
@@ -1063,6 +1081,52 @@ export default function App() {
                   <div className="ap-perf-foot">Média de duração dos estudos</div>
                 </article>
               </div>
+
+              <section className="ap-goal-panel">
+                <div className="ap-goal-heading">
+                  <div><span className="eyebrow">META X REALIDADE</span><h2>Seu objetivo semanal</h2></div>
+                  {activePlanWeeklyGoal > 0
+                    ? <strong>{weeklyGoalPercent}%</strong>
+                    : <span>Sem meta ativa</span>}
+                </div>
+                {activePlanWeeklyGoal > 0 ? (
+                  <>
+                    <div className="ap-goal-track"><span style={{ width: weeklyGoalPercent + "%" }} /></div>
+                    <div className="ap-goal-values">
+                      <span><b>{weekHours}h {weekRemainder}min</b> estudados</span>
+                      <span><b>{Math.floor(activePlanWeeklyGoal / 60)}h {activePlanWeeklyGoal % 60}min</b> planejados</span>
+                    </div>
+                    <p>{weekMinutes >= activePlanWeeklyGoal
+                      ? "Meta semanal atingida. Excelente consistência!"
+                      : "Continue registrando suas sessões para acompanhar o avanço em relação à meta dos seus planejamentos ativos."}</p>
+                  </>
+                ) : (
+                  <p>Crie ou ative um planejamento para comparar seu tempo de estudo com uma meta semanal.</p>
+                )}
+              </section>
+
+              <section className="ap-subject-performance">
+                <div className="ap-subject-performance-heading">
+                  <div><span className="eyebrow">DISTRIBUIÇÃO DO ESTUDO</span><h2>Desempenho por disciplina</h2></div>
+                  <span>{subjectStudyStats.length} {subjectStudyStats.length === 1 ? "disciplina" : "disciplinas"}</span>
+                </div>
+                {subjectStudyStats.length ? (
+                  <div className="ap-subject-performance-list">
+                    {subjectStudyStats.map(item => (
+                      <article className="ap-subject-performance-item" key={item.id}>
+                        <div className="ap-subject-performance-label">
+                          <strong>{item.name}</strong>
+                          <span>{Math.floor(item.minutes / 60)}h {item.minutes % 60}min · {item.sessions} {item.sessions === 1 ? "sessão" : "sessões"}</span>
+                        </div>
+                        <div className="ap-subject-performance-track"><span style={{ width: (item.minutes / maxSubjectMinutes * 100) + "%" }} /></div>
+                      </article>
+                    ))}
+                  </div>
+                ) : (
+                  <p>Registre sessões de estudo para visualizar a distribuição do seu tempo por disciplina.</p>
+                )}
+                <p className="ap-chart-note">A distribuição considera somente sessões registradas nesta semana.</p>
+              </section>
 
               <section className="ap-performance-chart">
                 <div className="ap-performance-chart-heading">
