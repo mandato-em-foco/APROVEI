@@ -20,6 +20,7 @@ type Contest = {
   status: string;
   deadline: string | null;
   official_url: string | null;
+  registration_url: string | null;
   vacancies: number | null;
   salary_min: number | null;
   salary_max: number | null;
@@ -160,7 +161,7 @@ export default function App() {
 
     const [contestResult, subjectResult, lessonResult] = await Promise.all([
       supabase.from("contests")
-        .select("id,title,state,city,level,status,deadline,official_url,vacancies,salary_min,salary_max,exam_date")
+        .select("id,title,state,city,level,status,deadline,official_url,registration_url,vacancies,salary_min,salary_max,exam_date")
         .in("status", ["open", "upcoming"])
         .order("deadline", { ascending: true })
         .limit(100),
@@ -876,6 +877,16 @@ export default function App() {
                         </div>
                       )}
 
+                      {contest.registration_url && contest.registration_url !== contest.official_url && (
+                        <a
+                          className="button button-primary"
+                          href={contest.registration_url}
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          Acessar inscrições <ArrowRight size={15} />
+                        </a>
+                      )}
                       {contest.official_url && (
                         <a
                           className="button button-outline"
