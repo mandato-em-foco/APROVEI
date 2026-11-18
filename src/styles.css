@@ -2579,6 +2579,8 @@ r(--mint-dark); }
 .ap-today-copy{display:grid;flex:1;gap:4px;min-width:0}
 .ap-today-copy strong{overflow:hidden;color:#294a53;font-size:12px;text-overflow:ellipsis}
 .ap-today-copy small{overflow:hidden;color:#89999d;font-size:10px;text-overflow:ellipsis;white-space:nowrap}
+.ap-today-copy .ap-today-status{font-size:10px;font-weight:800;color:#b17b38;white-space:normal}
+.ap-today-item.is-done .ap-today-copy .ap-today-status{color:#36836d}
 .ap-today-item.is-done .ap-today-copy strong{text-decoration:line-through;color:#7e9690}
 .ap-today-minutes{color:#43816f;font-size:11px;font-weight:900;white-space:nowrap}
 .ap-today-empty{display:flex;align-items:center;gap:12px;padding:17px;border:1px dashed #cbdcda;border-radius:13px;color:#668078;font-size:12px;line-height:1.7}
