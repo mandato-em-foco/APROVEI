@@ -288,10 +288,10 @@ export default function Planner({ contests, subjects, userId, completionRefreshK
       <section className="ap-today-panel">
         <div className="ap-today-heading">
           <div><span className="eyebrow">ACOMPANHAMENTO DIÁRIO</span><h2>Estudos de hoje</h2><p>{todayLabel}</p></div>
-          <span className="ap-today-progress">{savedPlans.flatMap(plan => plan.items.filter(item => item.weekday === todayWeekday)).filter(item => completedItemIds.includes(item.id)).length} / {savedPlans.flatMap(plan => plan.items.filter(item => item.weekday === todayWeekday)).length} concluídas</span>
+          <span className="ap-today-progress">{savedPlans.filter(plan => plan.is_active).flatMap(plan => plan.items.filter(item => item.weekday === todayWeekday)).filter(item => completedItemIds.includes(item.id)).length} / {savedPlans.filter(plan => plan.is_active).flatMap(plan => plan.items.filter(item => item.weekday === todayWeekday)).length} concluídas</span>
         </div>
         {(() => {
-          const todayItems = savedPlans.flatMap(plan => plan.items.filter(item => item.weekday === todayWeekday).map(item => ({ ...item, planTitle: plan.title })));
+          const todayItems = savedPlans.filter(plan => plan.is_active).flatMap(plan => plan.items.filter(item => item.weekday === todayWeekday).map(item => ({ ...item, planTitle: plan.title })));
           const completedCount = todayItems.filter(item => completedItemIds.includes(item.id)).length;
           const percent = todayItems.length ? Math.round(completedCount / todayItems.length * 100) : 0;
           return <>
