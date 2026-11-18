@@ -38,13 +38,13 @@ where not exists (select 1 from public.contests where title = 'Conselho Regional
 
 insert into public.contests (
   title, sphere, state, city, level, status, vacancies,
-  salary_min, salary_max, registration_start, deadline, exam_date,
+  salary_min, salary_max, registration_start, deadline,
   official_url, registration_url, source_url, last_verified_at
 )
 select
   'MOBI-Rio — Processo Seletivo Simplificado 024/2026',
   'municipal','RJ','Rio de Janeiro','Fundamental e médio','open',63,
-  1739.12,5960.63,date '2026-11-13',date '2026-11-21',null,
+  1739.12,5960.63,date '2026-11-13',date '2026-11-21',
   'https://mobi-rio.rio.br/processoseletivomobirio/',
   'https://mobi-rio.rio.br/processoseletivomobirio/',
   'https://mobi-rio.rio.br/processoseletivomobirio/',
