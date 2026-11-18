@@ -2585,3 +2585,6 @@ r(--mint-dark); }
 .ap-today-footnote{margin:0;color:#638075;font-size:11px;line-height:1.6}
 .ap-today-error{margin:0;color:#b34c4c;font-size:11px;line-height:1.6}
 @media(max-width:600px){.ap-today-panel{padding:19px 15px}.ap-today-heading{align-items:flex-start;flex-direction:column}.ap-today-heading h2{font-size:22px}.ap-today-item{gap:9px;padding:12px 10px}}
+
+/* Checkbox acessível sem herdar o tamanho dos campos de formulário */
+.ap-today-item>input{min-height:0!important;height:1px!important;min-width:0!important;padding:0!important}
