@@ -29,6 +29,7 @@ type Contest = {
 };
 
 type Subject = { id: string; name: string };
+type Topic = { id: string; subject_id: string; name: string; sort_order: number };
 
 type StudySession = {
   id: string;
@@ -36,6 +37,7 @@ type StudySession = {
   studied_at: string;
   notes: string | null;
   subject_id: string | null;
+  topic_id: string | null;
 };
 
 type Lesson = {
@@ -146,11 +148,13 @@ export default function App() {
   const [authMessage, setAuthMessage] = useState("");
   const [contests, setContests] = useState<Contest[]>([]);
   const [subjects, setSubjects] = useState<Subject[]>([]);
+  const [topics, setTopics] = useState<Topic[]>([]);
   const [sessions, setSessions] = useState<StudySession[]>([]);
   const [lessons, setLessons] = useState<Lesson[]>([]);
   const [search, setSearch] = useState("");
   const [stateFilter, setStateFilter] = useState("Todos os estados");
   const [subjectId, setSubjectId] = useState("");
+  const [topicId, setTopicId] = useState("");
   const [minutes, setMinutes] = useState("60");
   const [notes, setNotes] = useState("");
   const [message, setMessage] = useState("");
@@ -160,7 +164,7 @@ export default function App() {
   async function refresh(userId?: string) {
     if (!supabase) return;
 
-    const [contestResult, subjectResult, lessonResult] = await Promise.all([
+    const [contestResult, subjectResult, lessonResult, topicResult] = await Promise.all([
       supabase.from("contests")
         .select("id,title,state,city,level,status,deadline,official_url,registration_url,vacancies,salary_min,salary_max,exam_date")
         .in("status", ["open", "upcoming"])
@@ -171,7 +175,8 @@ export default function App() {
         .select("id,title,youtube_video_id,channel_name")
         .eq("is_published", true)
         .order("created_at", { ascending: false })
-        .limit(100)
+        .limit(100),
+      supabase.from("topics").select("id,subject_id,name,sort_order").order("sort_order", { ascending: true })
     ]);
 
     if (contestResult.data) {
@@ -192,10 +197,11 @@ export default function App() {
     }
     if (subjectResult.data) setSubjects(subjectResult.data as Subject[]);
     if (lessonResult.data) setLessons(lessonResult.data as Lesson[]);
+    if (topicResult.data) setTopics(topicResult.data as Topic[]);
 
     if (userId) {
       const result = await supabase.from("study_sessions")
-        .select("id,duration_minutes,studied_at,notes,subject_id")
+        .select("id,duration_minutes,studied_at,notes,subject_id,topic_id")
         .eq("user_id", userId)
         .order("studied_at", { ascending: false })
         .limit(100);
@@ -320,6 +326,7 @@ export default function App() {
     const { error } = await supabase.from("study_sessions").insert({
       user_id: session.user.id,
       subject_id: subjectId || null,
+      topic_id: topicId || null,
       duration_minutes: duration,
       notes: notes.trim() || null
     });
@@ -331,6 +338,7 @@ export default function App() {
 
     setMessage("Sessão registrada! O APROVEI atualizou automaticamente seu planejamento, quando houve correspondência de matéria e dia.");
     setNotes("");
+    setTopicId("");
     setCompletionRefreshKey(current => current + 1);
     await refresh(session.user.id);
   }
@@ -384,6 +392,15 @@ export default function App() {
     return groups;
   }, {} as Record<string, { id: string; name: string; minutes: number; sessions: number }>)).sort((a, b) => b.minutes - a.minutes);
   const maxSubjectMinutes = Math.max(1, ...subjectStudyStats.map(item => item.minutes));
+  const topicStudyStats = Object.values(weekSessions.filter(item => item.topic_id).reduce((groups, item) => {
+    const topic = topics.find(entry => entry.id === item.topic_id);
+    const key = item.topic_id as string;
+    if (!groups[key]) groups[key] = { id: key, name: topic?.name || "Assunto do edital", subject: subjects.find(subject => subject.id === item.subject_id)?.name || "Disciplina", minutes: 0, sessions: 0 };
+    groups[key].minutes += item.duration_minutes;
+    groups[key].sessions += 1;
+    return groups;
+  }, {} as Record<string, { id: string; name: string; subject: string; minutes: number; sessions: number }>)).sort((a, b) => b.minutes - a.minutes);
+  const maxTopicMinutes = Math.max(1, ...topicStudyStats.map(item => item.minutes));
     if (page === "landing") {
     return (
       <div className="site-shell">
@@ -956,7 +973,7 @@ export default function App() {
             Disciplina
             <select
               value={subjectId}
-              onChange={event => setSubjectId(event.target.value)}
+              onChange={event => { setSubjectId(event.target.value); setTopicId(""); }}
             >
               <option value="">Estudo livre / não selecionada</option>
               {subjects.map(subject => (
@@ -966,6 +983,21 @@ export default function App() {
               ))}
             </select>
           </label>
+
+          {subjectId && (
+            <label>
+              Assunto do edital (opcional)
+              <select value={topicId} onChange={event => setTopicId(event.target.value)}>
+                <option value="">Não especificar assunto</option>
+                {topics.filter(topic => topic.subject_id === subjectId).map(topic => (
+                  <option key={topic.id} value={topic.id}>{topic.name}</option>
+                ))}
+              </select>
+              {topics.every(topic => topic.subject_id !== subjectId) && (
+                <small className="ap-topic-help">Ainda não há assuntos cadastrados para esta disciplina. O registro por disciplina continua disponível.</small>
+              )}
+            </label>
+          )}
 
           <label>
             Tempo dedicado (minutos)
@@ -1126,6 +1158,32 @@ export default function App() {
                   <p>Registre sessões de estudo para visualizar a distribuição do seu tempo por disciplina.</p>
                 )}
                 <p className="ap-chart-note">A distribuição considera somente sessões registradas nesta semana.</p>
+              </section>
+
+              <section className="ap-topic-performance">
+                <div className="ap-subject-performance-heading">
+                  <div><span className="eyebrow">CONTEÚDO DO EDITAL</span><h2>Evolução por assunto</h2></div>
+                  <span>{topicStudyStats.length} {topicStudyStats.length === 1 ? "assunto" : "assuntos"}</span>
+                </div>
+                {topicStudyStats.length ? (
+                  <div className="ap-subject-performance-list">
+                    {topicStudyStats.map(item => (
+                      <article className="ap-subject-performance-item" key={item.id}>
+                        <div className="ap-topic-performance-label">
+                          <strong>{item.name}</strong>
+                          <span>{item.subject}</span>
+                        </div>
+                        <div className="ap-subject-performance-label">
+                          <span>{Math.floor(item.minutes / 60)}h {item.minutes % 60}min · {item.sessions} {item.sessions === 1 ? "sessão" : "sessões"}</span>
+                        </div>
+                        <div className="ap-subject-performance-track"><span style={{ width: (item.minutes / maxTopicMinutes * 100) + "%" }} /></div>
+                      </article>
+                    ))}
+                  </div>
+                ) : (
+                  <p>Ao registrar uma sessão, selecione também o assunto estudado. Assim, o APROVEI mostrará quais partes do edital já receberam atenção.</p>
+                )}
+                <p className="ap-chart-note">A evolução considera os assuntos informados nas sessões registradas nesta semana. Não é uma marcação manual de conclusão.</p>
               </section>
 
               <section className="ap-performance-chart">
