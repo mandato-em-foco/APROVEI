@@ -28,7 +28,7 @@ insert into public.contests (
 )
 select
   'Conselho Regional de Psicologia da 5ª Região (CRP-05) — Concurso Público 01/2026',
-  'state','RJ','Rio de Janeiro','Médio e superior','open',37,
+  'federal','RJ','Rio de Janeiro','Médio e superior','open',37,
   3077.42,7313.35,date '2026-11-16',date '2026-12-17',date '2027-02-28',
   'https://conhecimento.fgv.br/crp05',
   'https://conhecimento.fgv.br/crp05',
