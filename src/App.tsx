@@ -1,15 +1,16 @@
 import Planner from "./components/Planner";
+import NationalMap from "./components/NationalMap";
 import { useEffect, useMemo, useState } from "react";
 import type { FormEvent, ReactNode } from "react";
 import {
-  ArrowRight, BookOpen, CalendarDays, Check, CheckCircle2, ChevronDown,
+  ArrowRight, BookOpen, CalendarDays, Check, CheckCircle2, ChevronDown, MapPin,
   ChevronLeft, ChevronRight, Clock3, FileText, GraduationCap, Headphones,
   LayoutDashboard, LogIn, LogOut, Menu, Play, Search, ShieldCheck,
   Target, TrendingUp, Users, Video, X, Zap, Award, BookMarked
 } from "lucide-react";
 import { isSupabaseConfigured, supabase } from "./lib/supabase";
 
-type Page = "landing" | "login" | "signup" | "dashboard" | "contests" | "planner" | "videos" | "progress";
+type Page = "landing" | "login" | "signup" | "dashboard" | "contests" | "national" | "planner" | "videos" | "progress";
 
 type Contest = {
   id: string;
@@ -240,7 +241,7 @@ export default function App() {
       setSession(data.session);
       if (data.session) {
         const savedPage = window.sessionStorage.getItem("aprovei-current-page") as Page | null;
-        const studentPages: Page[] = ["dashboard", "contests", "planner", "videos", "progress"];
+        const studentPages: Page[] = ["dashboard", "contests", "national", "planner", "videos", "progress"];
         setPage(savedPage && studentPages.includes(savedPage) ? savedPage : "dashboard");
         void refresh(data.session.user.id);
       } else {
@@ -265,7 +266,7 @@ export default function App() {
   function go(next: Page) {
     setPage(next);
     if (typeof window !== "undefined") {
-      if (["dashboard", "contests", "planner", "videos", "progress"].includes(next)) {
+      if (["dashboard", "contests", "national", "planner", "videos", "progress"].includes(next)) {
         window.sessionStorage.setItem("aprovei-current-page", next);
       } else {
         window.sessionStorage.removeItem("aprovei-current-page");
@@ -709,6 +710,7 @@ export default function App() {
   const navItems: { id: Page; label: string; icon: ReactNode }[] = [
     { id: "dashboard", label: "Visão geral", icon: <LayoutDashboard /> },
     { id: "contests", label: "Concursos", icon: <Search /> },
+    { id: "national", label: "Mapa nacional", icon: <MapPin /> },
     { id: "planner", label: "Planejamento", icon: <CalendarDays /> },
     { id: "videos", label: "Videoaulas", icon: <Video /> },
     { id: "progress", label: "Meu desempenho", icon: <TrendingUp /> }
@@ -869,6 +871,17 @@ export default function App() {
                   </div>
                 )}
               </section>
+            </section>
+          )}
+
+          {page === "national" && (
+            <section>
+              <PageHeading
+                eyebrow="OPORTUNIDADES EM TODO O PAÍS"
+                title="Mapa nacional de concursos"
+                subtitle="Explore editais publicados por estado, compare remunerações e acompanhe concursos autorizados."
+              />
+              <NationalMap contests={contests} />
             </section>
           )}
 
