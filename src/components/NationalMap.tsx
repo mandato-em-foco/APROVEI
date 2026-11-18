@@ -61,18 +61,30 @@ export default function NationalMap({ contests }: { contests: Contest[] }) {
   const [selected,setSelected]=useState("");
   const [showAuthorized,setShowAuthorized]=useState(false);
   const [authSearch,setAuthSearch]=useState("");
-  const [loading,setLoading]=useState(true);\n  const resultsRef=useRef<HTMLElement|null>(null);
+  const [loading,setLoading]=useState(true);
+  const resultsRef=useRef<HTMLElement|null>(null);
   useEffect(()=>{fetch(GEO_URL).then(r=>{if(!r.ok)throw new Error("Não foi possível carregar o mapa.");return r.json()}).then(setGeo).catch(()=>setGeoError("O mapa geográfico não carregou. A lista por estado continua disponível."));},[]);
   useEffect(()=>{let alive=true;(async()=>{if(!supabase){setLoading(false);return;}const {data,error}=await supabase.from("contest_authorizations").select("*").order("authorized_at",{ascending:false});if(alive){if(!error&&data)setAuthorizations(data as Authorization[]);setLoading(false);}})();return()=>{alive=false}},[]);
   const stateFeatures=geo?.features||[];
-  const selectedName=stateFeatures.find(f=>getUF(f.properties)===selected)?.properties.name||selected;\n  useEffect(()=>{if(selected){window.setTimeout(()=>resultsRef.current?.scrollIntoView({behavior:"smooth",block:"start"}),120);}},[selected]);
-  const stateContests=contests.filter(c=>selected?(c.state===selected||c.sphere==="federal"):true);
+  const selectedName=stateFeatures.find(f=>getUF(f.properties)===selected)?.properties.name||selected;
+  useEffect(()=>{if(selected){window.setTimeout(()=>resultsRef.current?.scrollIntoView({behavior:"smooth",block:"start"}),120);}},[selected]);
+  const stateContests=contests.filter(c=>selected?c.state===selected:true);
   const stateAuthorizations=authorizations.filter(a=>selected?(a.state===selected||a.sphere==="federal"):true);
   const averages=useMemo(()=>Object.keys(regions).map(uf=>{const rows=contests.filter(c=>c.state===uf&&c.sphere!=="federal"&&c.employment_type!=="temporary"&&(c.salary_min||c.salary_max));const vals=rows.map(c=>((Number(c.salary_min)||Number(c.salary_max)||0)+(Number(c.salary_max)||Number(c.salary_min)||0))/2);return {uf,avg:vals.length?vals.reduce((s,v)=>s+v,0)/vals.length:0,count:rows.length}}),[contests]);
   const maxAverage=Math.max(1,...averages.map(x=>x.avg));
   const filteredAuthorizations=stateAuthorizations.filter(a=>[a.title,a.agency,a.positions||"",a.city||"",a.state||""].join(" ").toLowerCase().includes(authSearch.toLowerCase()));
   const project=(p:number[]):[number,number]=>[(p[0]+74)*14.5+15,(6-p[1])*14.2+12];
   const stateCount=stateFeatures.length||27;
+  if(selected) return <section className="national-contests state-detail-page">
+    <header className="state-detail-header">
+      <button className="national-clear" onClick={()=>setSelected("")}><MapPin size={15}/> Voltar ao mapa do Brasil</button>
+      <span className="eyebrow">OPORTUNIDADES POR ESTADO • {regions[selected]?.label||"BRASIL"}</span>
+      <h2>Concursos abertos em {selectedName}</h2>
+      <p>Consulte exclusivamente os concursos cadastrados para {selectedName} ({selected}).</p>
+      <strong className="state-detail-count">{stateContests.length} concursos encontrados</strong>
+    </header>
+    {stateContests.length ? <div className="national-contest-list">{stateContests.map(c=><article className="national-contest-card" key={c.id}><div><span className="authorization-state">{c.state||selected}{c.city?" • "+c.city:""}</span><h4>{c.title}</h4><div className="authorization-meta">{c.employment_type==="temporary"&&<span>Processo seletivo temporário</span>}{c.employment_type==="public_enterprise"&&<span>Empresa pública</span>}{c.level&&<span>{c.level}</span>}{c.vacancies!=null&&<span>{c.vacancies} vagas</span>}{(c.salary_min||c.salary_max)&&<span>{money(Number(c.salary_min||c.salary_max))}{c.salary_max&&c.salary_min&&c.salary_max!==c.salary_min?" a "+money(Number(c.salary_max)):""}</span>}{c.deadline&&<span>Inscrições até {new Date(c.deadline+"T12:00:00").toLocaleDateString("pt-BR")}</span>}</div></div><div className="national-card-links">{c.registration_url&&<a href={c.registration_url} target="_blank" rel="noreferrer">Inscrição <ExternalLink size={13}/></a>}{c.official_url&&<a href={c.official_url} target="_blank" rel="noreferrer">Edital oficial <ExternalLink size={13}/></a>}{c.source_url&&<a href={c.source_url} target="_blank" rel="noreferrer">Fonte consultada <ExternalLink size={13}/></a>}</div></article>)}</div> : <p className="national-empty">Não há concursos cadastrados para {selectedName} neste momento. A lista será exibida aqui quando houver oportunidades verificadas.</p>}
+  </section>;
   return <section className="national-contests">
     <div className="national-heading"><div><span className="eyebrow">PAINEL NACIONAL</span><h2>Concursos públicos em todo o Brasil</h2><p>Selecione uma unidade federativa para consultar editais publicados e oportunidades em andamento.</p></div><div className="national-total"><strong>{contests.length}</strong><span>editais cadastrados</span></div></div>
     <div className="national-layout">
