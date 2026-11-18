@@ -65,7 +65,7 @@ export default function NationalMap({ contests }: { contests: Contest[] }) {
   useEffect(()=>{fetch(GEO_URL).then(r=>{if(!r.ok)throw new Error("Não foi possível carregar o mapa.");return r.json()}).then(setGeo).catch(()=>setGeoError("O mapa geográfico não carregou. A lista por estado continua disponível."));},[]);
   useEffect(()=>{let alive=true;(async()=>{if(!supabase){setLoading(false);return;}const {data,error}=await supabase.from("contest_authorizations").select("*").order("authorized_at",{ascending:false});if(alive){if(!error&&data)setAuthorizations(data as Authorization[]);setLoading(false);}})();return()=>{alive=false}},[]);
   const stateFeatures=geo?.features||[];
-  const selectedName=stateFeatures.find(f=>f.properties.abbreviation===selected)?.properties.name||selected;
+  const selectedName=stateFeatures.find(f=>getUF(f.properties)===selected)?.properties.name||selected;\n  useEffect(()=>{if(selected){window.setTimeout(()=>resultsRef.current?.scrollIntoView({behavior:"smooth",block:"start"}),120);}},[selected]);
   const stateContests=contests.filter(c=>selected?(c.state===selected||c.sphere==="federal"):true);
   const stateAuthorizations=authorizations.filter(a=>selected?(a.state===selected||a.sphere==="federal"):true);
   const averages=useMemo(()=>Object.keys(regions).map(uf=>{const rows=contests.filter(c=>c.state===uf&&c.sphere!=="federal"&&c.employment_type!=="temporary"&&(c.salary_min||c.salary_max));const vals=rows.map(c=>((Number(c.salary_min)||Number(c.salary_max)||0)+(Number(c.salary_max)||Number(c.salary_min)||0))/2);return {uf,avg:vals.length?vals.reduce((s,v)=>s+v,0)/vals.length:0,count:rows.length}}),[contests]);
