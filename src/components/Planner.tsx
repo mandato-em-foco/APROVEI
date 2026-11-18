@@ -2,7 +2,7 @@
 import { useEffect, useMemo, useState } from "react";
 import type { FormEvent } from "react";
 import {
-  CalendarDays, Sparkles, PencilLine, CheckCircle2,
+  CalendarDays, Sparkles, PencilLine, CheckCircle2, ChevronDown,
   ArrowLeft, LoaderCircle
 } from "lucide-react";
 import { supabase } from "../lib/supabase";
