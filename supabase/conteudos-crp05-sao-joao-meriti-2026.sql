@@ -15,7 +15,7 @@ begin
     raise exception 'Concurso São João de Meriti 01/2026 não encontrado em public.contests.';
   end if;
 end;
-$;
+$$;
 
 -- Cargos/empregos do CRP-05.
 insert into public.contest_positions (contest_id,title,level,source_url,notes)
