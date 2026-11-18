@@ -2478,3 +2478,50 @@ r(--mint-dark); }
   }
   }
   
+
+
+/* Refinamento visual APROVEI — área do aluno e planejamento */
+.student-shell,.student-main{background:#f4f7f8}
+.student-sidebar{width:264px;padding:28px 19px 22px;background:#102f3b;border:0;color:#fff}
+.student-sidebar .brand-words,.student-sidebar .brand-words small{color:#fff}
+.student-sidebar .brand-symbol{background:#d5f0e6;color:#123d43}
+.student-profile{margin:34px 0 25px;padding:18px 13px;border:1px solid rgba(255,255,255,.12);border-radius:16px;background:rgba(255,255,255,.07)}
+.student-profile b{color:#fff}.student-profile small{color:#b7cbd0}
+.student-nav{gap:7px}.student-nav button,.sidebar-bottom button{min-height:48px;padding:0 14px;color:#c5d5d8;border-radius:12px}
+.student-nav button:hover,.sidebar-bottom button:hover{background:rgba(255,255,255,.09);color:#fff}
+.student-nav button.active{background:#d9f1e8;color:#164a4a;box-shadow:inset 3px 0 #53b69a}
+.sidebar-bottom{border-color:rgba(255,255,255,.14)}
+.student-topbar{min-height:112px;padding:22px clamp(22px,4vw,62px);background:#fff;border-bottom:1px solid #e4ebed}
+.student-topbar h1{font-size:27px;letter-spacing:-.7px}
+.student-content{max-width:1500px;padding:46px clamp(22px,4vw,62px) 76px}
+.page-heading{margin-bottom:34px}.page-heading h1{font-size:clamp(30px,3vw,39px);letter-spacing:-1.2px}.page-heading p{max-width:720px;font-size:14px;line-height:1.85}
+.student-panel,.metric-card{border-color:#e5edef;border-radius:20px;box-shadow:0 10px 30px rgba(26,55,67,.045)}
+.student-panel{padding:30px}.student-metrics{gap:18px;margin-bottom:28px}.metric-card{min-height:122px;padding:23px}.metric-card strong{font-size:25px}
+.student-grid,.quick-actions{gap:18px}.action-card{min-height:155px;padding:19px;border-radius:15px;background:#fbfdfd}
+.welcome-panel{background:linear-gradient(145deg,#174453,#287c78)}
+.contest-grid,.lesson-grid{gap:20px}.contest-card,.lesson-card{padding:25px;border:1px solid #e3ebed;border-radius:18px;background:#fff;box-shadow:0 10px 28px rgba(26,55,67,.045)}
+.student-content input,.student-content select,.student-content textarea{min-height:48px;padding:12px 14px;border:1px solid #dce6e8;border-radius:11px;background:#fbfdfd;color:#203b45}
+.ap-planner{display:grid;gap:30px}.ap-planner-intro{max-width:800px;margin:0 auto 8px;text-align:center}
+.ap-planner-intro h2{margin:13px 0;color:#173c48;font:900 clamp(26px,3vw,35px)/1.2 'Manrope',sans-serif}
+.ap-planner-intro p{max-width:650px;margin:0 auto;color:#70848b;font-size:14px;line-height:1.9}
+.ap-planner-choices{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:22px}
+.ap-planner-choice{display:flex;flex-direction:column;align-items:flex-start;min-width:0;padding:30px;border:1px solid #e0e9eb;border-radius:22px;background:#fff;box-shadow:0 12px 34px rgba(25,59,70,.055)}
+.ap-planner-choice.ap-auto{background:linear-gradient(145deg,#fff 55%,#eff8f4)}.ap-planner-choice.ap-manual{background:linear-gradient(145deg,#fff 55%,#f0f5fa)}
+.ap-choice-icon{width:54px;height:54px;display:grid;place-items:center;margin-bottom:22px;border-radius:16px;background:#e2f3ec;color:#287b68}
+.ap-manual .ap-choice-icon{background:#e9eff8;color:#466b96}.ap-choice-label{color:#6a9188;font-size:10px;font-weight:900;letter-spacing:1.2px}
+.ap-planner-choice h3{margin:12px 0 10px;color:#183e49;font:900 21px 'Manrope',sans-serif}
+.ap-planner-choice p,.ap-planner-choice li{color:#71848b;font-size:13px;line-height:1.85}
+.ap-planner-choice ul{display:grid;gap:8px;margin:18px 0 25px;padding-left:19px}.ap-planner-choice .button{width:100%;min-height:49px;margin-top:auto}
+.ap-planner-footnote{display:flex;align-items:center;gap:12px;padding:18px 22px;border:1px solid #dcebe5;border-radius:15px;background:#f0f8f4;color:#52766b;font-size:12px;line-height:1.7}
+.ap-planner-form{max-width:850px;margin:0 auto;display:grid;gap:20px}.ap-planner-form h2{margin:0;color:#183e49;font:900 27px 'Manrope',sans-serif}
+.ap-day-picker,.ap-subject-picker{margin:0;padding:20px;border:1px solid #e2eaec;border-radius:15px}
+.ap-day-picker>div{display:flex;flex-wrap:wrap;gap:9px}.ap-day-picker button{min-width:54px;min-height:43px;border:1px solid #dce6e8;border-radius:10px;background:#fff;color:#61767e;font-weight:800}
+.ap-day-picker button.selected{border-color:#287b68;background:#e3f3ec;color:#236c5b}
+.ap-planner-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.ap-subject-picker>div{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.ap-subject-picker label{display:flex;align-items:center;gap:10px;padding:12px;border:1px solid #e6edef;border-radius:10px;color:#536d75;font-size:12px}
+.ap-auto-note{display:flex;gap:12px;padding:16px;border-radius:12px;background:#f2f7f6;color:#5d7b78}
+.ap-auto-note p{margin:0;font-size:12px;line-height:1.8}
+.planner-session-area{margin-top:72px;padding-top:54px;border-top:1px solid #e1e9eb}
+@media(max-width:850px){.student-sidebar{width:285px}.student-content{padding:32px 20px 55px}.ap-planner-choices{grid-template-columns:1fr}}
+@media(max-width:600px){.student-topbar{min-height:90px;padding:15px 17px}.student-topbar h1{font-size:22px}.student-content{padding:30px 16px 48px}.student-panel{padding:22px 18px}.student-metrics,.student-grid,.quick-actions{grid-template-columns:1fr}.ap-planner-choice{padding:24px 20px}.ap-planner-fields,.ap-subject-picker>div{grid-template-columns:1fr}.ap-day-picker{padding:16px 12px}}
