@@ -103,9 +103,11 @@ export default function Planner({ contests, subjects, userId, completionRefreshK
     let active = true;
     async function loadContestPositions() {
       setPositions([]);
-      setPositionId("");
-      setSubjectMappings([]);
-      setSelectedSubjects([]);
+      if (!editingPlanId) {
+        setPositionId("");
+        setSubjectMappings([]);
+        setSelectedSubjects([]);
+      }
       if (!supabase || !contestId) {
         setLoadingPositions(false);
         return;
