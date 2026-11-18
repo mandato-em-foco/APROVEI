@@ -16,6 +16,8 @@ type Contest = {
 };
 
 type Subject = { id: string; name: string };
+type ContestPosition = { id: string; contest_id: string; title: string; vacancies: number | null; level: string | null; salary_min: number | null; salary_max: number | null; notes: string | null };
+type SubjectMapping = { subject_id: string; priority: number | null; suggested_weekly_minutes: number | null };
 type SavedPlanItem = { id: string; plan_id: string; subject_id: string; weekday: number; duration_minutes: number; sort_order: number };
 type SavedPlan = { id: string; title: string; mode: "automatic" | "student"; created_at: string; daily_goal_minutes: number; weekly_goal_minutes: number; is_active: boolean; items: SavedPlanItem[] };
 
@@ -39,6 +41,11 @@ const week = [
 export default function Planner({ contests, subjects, userId, completionRefreshKey }: Props) {
   const [mode, setMode] = useState<"automatic" | "student" | null>(null);
   const [contestId, setContestId] = useState("");
+  const [positions, setPositions] = useState<ContestPosition[]>([]);
+  const [positionId, setPositionId] = useState("");
+  const [subjectMappings, setSubjectMappings] = useState<SubjectMapping[]>([]);
+  const [loadingPositions, setLoadingPositions] = useState(false);
+  const [loadingMappedSubjects, setLoadingMappedSubjects] = useState(false);
   const [title, setTitle] = useState("Meu planejamento de estudos");
   const [days, setDays] = useState<number[]>([1, 2, 3, 4, 5]);
   const [hours, setHours] = useState("2");
@@ -89,10 +96,86 @@ export default function Planner({ contests, subjects, userId, completionRefreshK
   useEffect(() => { void loadTodayCompletions(); }, [userId, todayKey, completionRefreshKey]);
 
   const selectedContest = contests.find(item => item.id === contestId);
+  const selectedPosition = positions.find(item => item.id === positionId);
 
+  useEffect(() => {
+    let active = true;
+    async function loadContestPositions() {
+      setPositions([]);
+      setPositionId("");
+      setSubjectMappings([]);
+      setSelectedSubjects([]);
+      if (!supabase || !contestId) {
+        setLoadingPositions(false);
+        return;
+      }
+      setLoadingPositions(true);
+      const { data, error } = await supabase
+        .from("contest_positions")
+        .select("id,contest_id,title,vacancies,level,salary_min,salary_max,notes")
+        .eq("contest_id", contestId)
+        .order("title", { ascending: true });
+      if (!active) return;
+      if (error) {
+        setNotice("Não foi possível carregar os cargos: " + error.message);
+        setPositions([]);
+        setLoadingPositions(false);
+        return;
+      }
+      const found = (data || []) as ContestPosition[];
+      setPositions(found);
+      if (!found.length) {
+        const { data: fallback, error: fallbackError } = await supabase
+          .from("contest_subjects")
+          .select("subject_id,priority,suggested_weekly_minutes")
+          .eq("contest_id", contestId)
+          .order("priority", { ascending: false });
+        if (!active) return;
+        if (fallbackError) {
+          setNotice("Não foi possível carregar as disciplinas do edital: " + fallbackError.message);
+        } else {
+          setSubjectMappings((fallback || []) as SubjectMapping[]);
+        }
+      }
+      setLoadingPositions(false);
+    }
+    void loadContestPositions();
+    return () => { active = false; };
+  }, [contestId]);
+
+  useEffect(() => {
+    let active = true;
+    async function loadPositionSubjects() {
+      if (!supabase || !positionId) return;
+      setLoadingMappedSubjects(true);
+      setSubjectMappings([]);
+      const { data, error } = await supabase
+        .from("contest_position_subjects")
+        .select("subject_id,priority,suggested_weekly_minutes")
+        .eq("position_id", positionId)
+        .order("priority", { ascending: false });
+      if (!active) return;
+      if (error) {
+        setNotice("Não foi possível carregar as disciplinas deste cargo: " + error.message);
+      } else {
+        setSubjectMappings((data || []) as SubjectMapping[]);
+      }
+      setLoadingMappedSubjects(false);
+    }
+    if (positionId) void loadPositionSubjects();
+    else setLoadingMappedSubjects(false);
+    return () => { active = false; };
+  }, [positionId]);
+
+  const mappedSubjectIds = useMemo(
+    () => new Set(subjectMappings.map(mapping => mapping.subject_id)),
+    [subjectMappings]
+  );
   const orderedSubjects = useMemo(
-    () => [...subjects].sort((a, b) => a.name.localeCompare(b.name, "pt-BR")),
-    [subjects]
+    () => [...subjects]
+      .filter(subject => !contestId || (positions.length > 0 ? !!positionId && mappedSubjectIds.has(subject.id) : mappedSubjectIds.has(subject.id)))
+      .sort((a, b) => a.name.localeCompare(b.name, "pt-BR")),
+    [subjects, contestId, positions.length, positionId, mappedSubjectIds]
   );
 
   function toggleDay(day: number) {
@@ -132,6 +215,16 @@ export default function Planner({ contests, subjects, userId, completionRefreshK
       return;
     }
 
+    if (contestId && positions.length > 0 && !positionId) {
+      setNotice("Selecione o cargo para carregar o conteúdo correto do edital.");
+      return;
+    }
+
+    if (contestId && !subjectMappings.length) {
+      setNotice("Ainda não há disciplinas vinculadas a esta seleção. Escolha outro concurso ou tente novamente mais tarde.");
+      return;
+    }
+
     if (days.length === 0) {
       setNotice("Escolha pelo menos um dia da semana.");
       return;
@@ -153,18 +246,9 @@ export default function Planner({ contests, subjects, userId, completionRefreshK
     }> = [];
 
     if (mode === "automatic") {
-      const { data: mappings, error } = await supabase
-        .from("contest_subjects")
-        .select("subject_id,priority,suggested_weekly_minutes")
-        .eq("contest_id", contestId)
-        .order("priority", { ascending: false });
+      const mappings = subjectMappings;
 
-      if (error) {
-        setNotice("Erro ao consultar disciplinas: " + error.message);
-        return;
-      }
-
-      if (!mappings?.length) {
+      if (!mappings.length) {
         setNotice(
           "Ainda não existem disciplinas cadastradas para esse concurso. Você pode usar o Planejamento Aluno ou escolher outro concurso."
         );
@@ -242,6 +326,7 @@ export default function Planner({ contests, subjects, userId, completionRefreshK
       .insert({
         user_id: userId,
         contest_id: contestId || null,
+        position_id: positionId || null,
         title: title.trim() || "Meu planejamento",
         mode,
         daily_goal_minutes: dailyMinutes,
@@ -459,7 +544,13 @@ export default function Planner({ contests, subjects, userId, completionRefreshK
             {mode === "automatic" ? "Concurso com edital cadastrado" : "Concurso (opcional)"}
             <select
               value={contestId}
-              onChange={event => setContestId(event.target.value)}
+              onChange={event => {
+                setContestId(event.target.value);
+                setPositionId("");
+                setSubjectMappings([]);
+                setSelectedSubjects([]);
+                setNotice("");
+              }}
               required={mode === "automatic"}
             >
               <option value="">{mode === "automatic" ? "Selecione o concurso" : "Estudo geral — sem concurso definido"}</option>
@@ -474,6 +565,48 @@ export default function Planner({ contests, subjects, userId, completionRefreshK
           {selectedContest && (
             <p className="ap-selected-contest">
               Selecionado: <strong>{selectedContest.title}</strong>
+            </p>
+          )}
+
+          {contestId && loadingPositions && (
+            <p className="ap-position-loading">Consultando cargos e funções disponíveis...</p>
+          )}
+
+          {selectedContest && positions.length > 0 && (
+            <label className="ap-position-field">
+              Cargo / função do edital
+              <select
+                value={positionId}
+                onChange={event => {
+                  setPositionId(event.target.value);
+                  setSelectedSubjects([]);
+                  setNotice("");
+                }}
+                required
+              >
+                <option value="">Selecione o cargo</option>
+                {positions.map(position => (
+                  <option key={position.id} value={position.id}>
+                    {position.title}{position.vacancies ? " • " + position.vacancies + " vagas" : ""}
+                  </option>
+                ))}
+              </select>
+              {selectedPosition && (
+                <small>
+                  {selectedPosition.level || "Escolaridade não informada"}
+                  {selectedPosition.salary_min || selectedPosition.salary_max
+                    ? " • Remuneração: " + (selectedPosition.salary_min ? "R$ " + Number(selectedPosition.salary_min).toLocaleString("pt-BR") : "")
+                      + (selectedPosition.salary_min && selectedPosition.salary_max ? " a " : "")
+                      + (selectedPosition.salary_max ? "R$ " + Number(selectedPosition.salary_max).toLocaleString("pt-BR") : "")
+                    : ""}
+                </small>
+              )}
+            </label>
+          )}
+
+          {selectedContest && positions.length === 0 && !loadingPositions && (
+            <p className="ap-position-hint">
+              Este edital ainda não possui cargos separados. O planejamento utilizará as disciplinas gerais cadastradas para o concurso.
             </p>
           )}
 
@@ -525,7 +658,11 @@ export default function Planner({ contests, subjects, userId, completionRefreshK
           {mode === "student" && (
             <fieldset className="ap-subject-picker">
               <legend>Disciplinas que deseja incluir</legend>
-              {orderedSubjects.length ? (
+              {loadingMappedSubjects ? (
+                <p>Carregando as disciplinas do cargo...</p>
+              ) : contestId && positions.length > 0 && !positionId ? (
+                <p>Selecione primeiro o cargo para visualizar somente as disciplinas correspondentes.</p>
+              ) : orderedSubjects.length ? (
                 <div>
                   {orderedSubjects.map(subject => (
                     <label key={subject.id}>
@@ -539,7 +676,7 @@ export default function Planner({ contests, subjects, userId, completionRefreshK
                   ))}
                 </div>
               ) : (
-                <p>Não há disciplinas cadastradas no momento.</p>
+                <p>{contestId ? "Não há disciplinas vinculadas a esta seleção." : "Não há disciplinas cadastradas no momento."}</p>
               )}
             </fieldset>
           )}
@@ -548,10 +685,10 @@ export default function Planner({ contests, subjects, userId, completionRefreshK
             <div className="ap-auto-note">
               <Sparkles size={18} />
               <p>
-                O cronograma automático só será gerado quando houver
-                disciplinas vinculadas ao concurso selecionado. Assim,
-                evitamos apresentar uma grade genérica como se fosse
-                baseada no edital.
+                O cronograma automático utiliza as disciplinas oficiais
+                cadastradas para o concurso e, quando houver cargos,
+                considera exclusivamente o conteúdo correspondente à função
+                escolhida. Assim, evitamos misturar matérias de cargos diferentes.
               </p>
             </div>
           )}
