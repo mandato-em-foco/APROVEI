@@ -1,5 +1,5 @@
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { FormEvent } from "react";
 import {
   CalendarDays, Sparkles, PencilLine, CheckCircle2,
@@ -16,6 +16,8 @@ type Contest = {
 };
 
 type Subject = { id: string; name: string };
+type SavedPlanItem = { id: string; plan_id: string; subject_id: string; weekday: number; duration_minutes: number; sort_order: number };
+type SavedPlan = { id: string; title: string; mode: "automatic" | "student"; created_at: string; daily_goal_minutes: number; weekly_goal_minutes: number; is_active: boolean; items: SavedPlanItem[] };
 
 type Props = {
   contests: Contest[];
@@ -44,6 +46,29 @@ export default function Planner({ contests, subjects, userId }: Props) {
   const [saving, setSaving] = useState(false);
   const [notice, setNotice] = useState("");
   const [success, setSuccess] = useState(false);
+  const [savedPlans, setSavedPlans] = useState<SavedPlan[]>([]);
+  const [loadingPlans, setLoadingPlans] = useState(true);
+  const [expandedPlanId, setExpandedPlanId] = useState<string | null>(null);
+
+  async function loadSavedPlans() {
+    if (!supabase) { setLoadingPlans(false); return; }
+    setLoadingPlans(true);
+    const { data: plans, error } = await supabase.from("study_plans")
+      .select("id,title,mode,created_at,daily_goal_minutes,weekly_goal_minutes,is_active")
+      .eq("user_id", userId).order("created_at", { ascending: false });
+    if (error || !plans?.length) { setSavedPlans([]); setLoadingPlans(false); return; }
+    const ids = plans.map(plan => plan.id);
+    const { data: items } = await supabase.from("study_plan_items")
+      .select("id,plan_id,subject_id,weekday,duration_minutes,sort_order")
+      .eq("user_id", userId).in("plan_id", ids).order("sort_order", { ascending: true });
+    setSavedPlans(plans.map(plan => ({
+      ...plan,
+      mode: plan.mode as "automatic" | "student",
+      items: (items || []).filter(item => item.plan_id === plan.id) as SavedPlanItem[]
+    })) as SavedPlan[]);
+    setLoadingPlans(false);
+  }
+  useEffect(() => { void loadSavedPlans(); }, [userId]);
 
   const selectedContest = contests.find(item => item.id === contestId);
 
@@ -236,10 +261,49 @@ export default function Planner({ contests, subjects, userId }: Props) {
     setSaving(false);
     setSuccess(true);
     setNotice("Planejamento salvo com sucesso!");
+    await loadSavedPlans();
+    setExpandedPlanId(plan.id);
   }
 
   return (
     <div className="ap-planner">
+      <section className="ap-saved-plans">
+        <div className="ap-saved-heading">
+          <div><span className="eyebrow">SUA ROTINA</span><h2>Meus planejamentos</h2><p>Seus horários ficam salvos na sua conta. Volte aqui quando quiser continuar.</p></div>
+          <span className="ap-plan-count">{savedPlans.length} {savedPlans.length === 1 ? "plano" : "planos"}</span>
+        </div>
+        {loadingPlans ? <p className="ap-saved-empty">Carregando seus planejamentos...</p> :
+          savedPlans.length === 0 ? (
+            <div className="ap-saved-empty"><CalendarDays size={22}/><strong>Você ainda não tem um planejamento salvo.</strong><span>Crie sua primeira rotina logo abaixo. Ela aparecerá aqui automaticamente.</span></div>
+          ) : (
+            <div className="ap-saved-list">
+              {savedPlans.map(plan => {
+                const expanded = expandedPlanId === plan.id;
+                const totalMinutes = plan.items.reduce((sum,item) => sum + item.duration_minutes,0);
+                return <article className="ap-saved-card" key={plan.id}>
+                  <button type="button" className="ap-saved-card-toggle" onClick={() => setExpandedPlanId(expanded ? null : plan.id)} aria-expanded={expanded}>
+                    <span className="ap-saved-card-icon"><CalendarDays size={20}/></span>
+                    <span className="ap-saved-card-main"><strong>{plan.title}</strong><small>{plan.mode === "student" ? "Planejamento do aluno" : "Planejamento automático"} · {plan.items.length} sessões na semana</small></span>
+                    <span className="ap-saved-card-meta">{Math.floor(totalMinutes/60)}h {totalMinutes%60 ? String(totalMinutes%60)+"min" : ""}</span><ChevronDown className={expanded ? "is-expanded" : ""} size={19}/>
+                  </button>
+                  {expanded && <div className="ap-saved-schedule">
+                    {week.map(day => {
+                      const dayItems = plan.items.filter(item => item.weekday === day.value);
+                      if (!dayItems.length) return null;
+                      return <div className="ap-saved-day" key={day.value}><strong>{day.label}</strong><div>
+                        {dayItems.map(item => {
+                          const subject = subjects.find(entry => entry.id === item.subject_id);
+                          return <span className="ap-saved-session" key={item.id}><b>{subject?.name || "Disciplina"}</b><small>{item.duration_minutes} min</small></span>;
+                        })}
+                      </div></div>;
+                    })}
+                    {!plan.items.length && <p>Este planejamento ainda não possui sessões.</p>}
+                  </div>}
+                </article>;
+              })}
+            </div>
+          )}
+      </section>
       {!mode ? (
         <>
           <div className="ap-planner-intro">
