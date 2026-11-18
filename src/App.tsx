@@ -133,6 +133,7 @@ export default function App() {
   const [faqOpen, setFaqOpen] = useState<number | null>(0);
   const [billing, setBilling] = useState<"annual" | "semiannual" | "quarterly">("annual");
   const [session, setSession] = useState<any>(null);
+  const [rememberMe, setRememberMe] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
@@ -185,7 +186,10 @@ export default function App() {
 
     supabase.auth.getSession().then(({ data }) => {
       setSession(data.session);
-      if (data.session) void refresh(data.session.user.id);
+      if (data.session) {
+        setPage("dashboard");
+        void refresh(data.session.user.id);
+      }
     });
 
     const { data } = supabase.auth.onAuthStateChange((_event, next) => {
@@ -224,6 +228,11 @@ export default function App() {
     if (!supabase) {
       setAuthMessage("A conexão com o sistema ainda não está configurada. Tente novamente mais tarde.");
       return;
+    }
+
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem("aprovei-remember-session", rememberMe ? "true" : "false");
+      if (!rememberMe) window.localStorage.removeItem("aprovei-last-session");
     }
 
     const result = page === "signup"
@@ -291,6 +300,34 @@ export default function App() {
   const totalMinutes = sessions.reduce((total, item) => total + item.duration_minutes, 0);
   const totalHours = Math.floor(totalMinutes / 60);
   const remainingMinutes = totalMinutes % 60;
+  const todayForStats = new Date();
+  const weekStart = new Date(todayForStats);
+  weekStart.setHours(0, 0, 0, 0);
+  weekStart.setDate(weekStart.getDate() - ((weekStart.getDay() + 6) % 7));
+  const weekEnd = new Date(weekStart);
+  weekEnd.setDate(weekEnd.getDate() + 7);
+  const weekSessions = sessions.filter(item => {
+    const date = new Date(item.studied_at);
+    return date >= weekStart && date < weekEnd;
+  });
+  const weekMinutes = weekSessions.reduce((sum, item) => sum + item.duration_minutes, 0);
+  const weekHours = Math.floor(weekMinutes / 60);
+  const weekRemainder = weekMinutes % 60;
+  const activeStudyDays = new Set(weekSessions.map(item => {
+    const date = new Date(item.studied_at);
+    return `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
+  })).size;
+  const weekDayStats = Array.from({ length: 7 }, (_, index) => {
+    const date = new Date(weekStart);
+    date.setDate(weekStart.getDate() + index);
+    const key = `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
+    const minutes = weekSessions.filter(item => {
+      const studied = new Date(item.studied_at);
+      return `${studied.getFullYear()}-${studied.getMonth()}-${studied.getDate()}` === key;
+    }).reduce((sum, item) => sum + item.duration_minutes, 0);
+    return { label: date.toLocaleDateString("pt-BR", { weekday: "short" }).replace(".", ""), minutes };
+  });
+  const maxWeekDayMinutes = Math.max(60, ...weekDayStats.map(day => day.minutes));
     if (page === "landing") {
     return (
       <div className="site-shell">
@@ -532,6 +569,16 @@ export default function App() {
                 value={password} onChange={event => setPassword(event.target.value)}
                 placeholder="Mínimo de 6 caracteres" />
             </label>
+            {!isSignup && (
+              <label className="remember-session">
+                <input
+                  type="checkbox"
+                  checked={rememberMe}
+                  onChange={event => setRememberMe(event.target.checked)}
+                />
+                <span><strong>Manter-me conectado</strong><small>Não precisar entrar novamente neste dispositivo.</small></span>
+              </label>
+            )}
             <button className="button button-primary auth-submit" type="submit">
               {isSignup ? "Criar conta" : "Entrar"} <ArrowRight size={17} />
             </button>
@@ -912,39 +959,62 @@ export default function App() {
           )}
 
           {page === "progress" && (
-            <section>
+            <section className="performance-page">
               <PageHeading
                 eyebrow="SUA EVOLUÇÃO"
                 title="Meu desempenho"
-                subtitle="Acompanhe sua dedicação e mantenha a consistência."
+                subtitle="Veja sua dedicação nesta semana, identifique seus dias mais produtivos e acompanhe sua constância."
               />
 
-              <div className="student-metrics">
-                <Metric
-                  icon={<Clock3 />}
-                  value={`${totalHours}h ${remainingMinutes}min`}
-                  label="Tempo total de estudo"
-                />
-                <Metric
-                  icon={<BookOpen />}
-                  value={String(sessions.length)}
-                  label="Sessões concluídas"
-                />
-                <Metric
-                  icon={<TrendingUp />}
-                  value={String(sessions.length ? Math.round(totalMinutes / sessions.length) : 0)}
-                  label="Minutos por sessão"
-                />
+              <div className="ap-performance-grid">
+                <article className="ap-performance-card ap-perf-coral">
+                  <div className="ap-perf-top"><span className="ap-perf-icon"><Clock3 /></span><span className="ap-perf-tag">ESTA SEMANA</span></div>
+                  <div className="ap-perf-value">{weekHours}<small>h</small> {weekRemainder}<small>min</small></div>
+                  <div className="ap-perf-label">Tempo dedicado</div>
+                  <div className="ap-perf-foot">De segunda a domingo</div>
+                </article>
+                <article className="ap-performance-card ap-perf-violet">
+                  <div className="ap-perf-top"><span className="ap-perf-icon"><BookOpen /></span><span className="ap-perf-tag">REGISTROS</span></div>
+                  <div className="ap-perf-value">{weekSessions.length}</div>
+                  <div className="ap-perf-label">Sessões registradas</div>
+                  <div className="ap-perf-foot">Estudos lançados nesta semana</div>
+                </article>
+                <article className="ap-performance-card ap-perf-aqua">
+                  <div className="ap-perf-top"><span className="ap-perf-icon"><CalendarDays /></span><span className="ap-perf-tag">CONSTÂNCIA</span></div>
+                  <div className="ap-perf-value">{activeStudyDays}<small>/7</small></div>
+                  <div className="ap-perf-label">Dias com estudo</div>
+                  <div className="ap-perf-foot">Dias diferentes com atividade registrada</div>
+                </article>
+                <article className="ap-performance-card ap-perf-gold">
+                  <div className="ap-perf-top"><span className="ap-perf-icon"><Target /></span><span className="ap-perf-tag">MÉDIA</span></div>
+                  <div className="ap-perf-value">{weekSessions.length ? Math.round(weekMinutes / weekSessions.length) : 0}<small>min</small></div>
+                  <div className="ap-perf-label">Por sessão</div>
+                  <div className="ap-perf-foot">Média de duração dos estudos</div>
+                </article>
               </div>
 
-              <section className="student-panel">
-                <div className="panel-heading">
-                  <div>
-                    <span className="eyebrow">HISTÓRICO</span>
-                    <h2>Suas sessões de estudo</h2>
-                  </div>
+              <section className="ap-performance-chart">
+                <div className="ap-performance-chart-heading">
+                  <div><span className="eyebrow">RITMO DA SEMANA</span><h2>Seu ritmo de estudos</h2></div>
+                  <span className="ap-chart-total">{weekHours}h {weekRemainder}min no total</span>
                 </div>
+                <div className="ap-week-bars">
+                  {weekDayStats.map((day, index) => (
+                    <div className="ap-week-day" key={day.label + index}>
+                      <strong>{day.minutes ? `${day.minutes} min` : "—"}</strong>
+                      <div className="ap-week-track"><span style={{ height: `${Math.max(day.minutes ? 8 : 0, day.minutes / maxWeekDayMinutes * 100)}%` }} /></div>
+                      <small>{day.label}</small>
+                    </div>
+                  ))}
+                </div>
+                <p className="ap-chart-note">O gráfico considera os estudos registrados no APROVEI nesta semana. Registre suas sessões para acompanhar sua evolução.</p>
+              </section>
 
+              <section className="student-panel ap-history-panel">
+                <div className="panel-heading">
+                  <div><span className="eyebrow">HISTÓRICO</span><h2>Suas sessões de estudo</h2></div>
+                  <span className="ap-history-count">{sessions.length} registros</span>
+                </div>
                 {sessions.length === 0 ? (
                   <Empty text="Quando você registrar seus estudos, seu histórico aparecerá aqui." />
                 ) : (
@@ -952,9 +1022,7 @@ export default function App() {
                     {sessions.map(item => (
                       <article className="history-item" key={item.id}>
                         <div>
-                          <b>
-                            {subjects.find(subject => subject.id === item.subject_id)?.name || "Estudo livre"}
-                          </b>
+                          <b>{subjects.find(subject => subject.id === item.subject_id)?.name || "Estudo livre"}</b>
                           <p>{item.notes || "Sessão de estudo"}</p>
                           <small>{new Date(item.studied_at).toLocaleString("pt-BR")}</small>
                         </div>
