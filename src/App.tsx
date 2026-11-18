@@ -252,7 +252,11 @@ export default function App() {
     const { data } = supabase.auth.onAuthStateChange((_event, next) => {
       setSession(next);
       if (next) void refresh(next.user.id);
-      else setSessions([]);
+      else {
+        setSessions([]);
+        setTopicSessions([]);
+        setActivePlanWeeklyGoal(0);
+      }
     });
 
     return () => data.subscription.unsubscribe();
