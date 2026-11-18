@@ -69,7 +69,7 @@ export default function NationalMap({ contests }: { contests: Contest[] }) {
   const selectedName=stateFeatures.find(f=>getUF(f.properties)===selected)?.properties.name||selected;
   useEffect(()=>{if(selected){window.setTimeout(()=>resultsRef.current?.scrollIntoView({behavior:"smooth",block:"start"}),120);}},[selected]);
   const stateContests=contests.filter(c=>selected?c.state===selected:true);
-  const stateAuthorizations=authorizations.filter(a=>selected?(a.state===selected||a.sphere==="federal"):true);
+  const stateAuthorizations=authorizations.filter(a=>selected?a.state===selected:true);
   const averages=useMemo(()=>Object.keys(regions).map(uf=>{const rows=contests.filter(c=>c.state===uf&&c.sphere!=="federal"&&c.employment_type!=="temporary"&&(c.salary_min||c.salary_max));const vals=rows.map(c=>((Number(c.salary_min)||Number(c.salary_max)||0)+(Number(c.salary_max)||Number(c.salary_min)||0))/2);return {uf,avg:vals.length?vals.reduce((s,v)=>s+v,0)/vals.length:0,count:rows.length}}),[contests]);
   const maxAverage=Math.max(1,...averages.map(x=>x.avg));
   const filteredAuthorizations=stateAuthorizations.filter(a=>[a.title,a.agency,a.positions||"",a.city||"",a.state||""].join(" ").toLowerCase().includes(authSearch.toLowerCase()));
