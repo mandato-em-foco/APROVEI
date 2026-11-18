@@ -3160,3 +3160,24 @@ r(--mint-dark); }
 .national-state-fallback button{min-width:38px;padding:8px 6px;border:1px solid #aab8bf;border-radius:8px;background:#fff;color:#203c4d;font-size:11px;font-weight:900}
 .national-state-fallback button.active{background:#234657;color:#fff;border-color:#234657}
 .national-map-note a{color:#176c66;font-weight:800}
+
+
+/* Mapa nacional: contraste regional e seleção de estado */
+.brazil-state { opacity: .96; stroke: #ffffff; stroke-width: 1.8; paint-order: stroke; }
+.brazil-state.region-norte { filter: saturate(1.12); }
+.brazil-state.region-nordeste { filter: saturate(1.15); }
+.brazil-state.region-centro-oeste { filter: saturate(1.12); }
+.brazil-state.region-sudeste { filter: saturate(1.12); }
+.brazil-state.region-sul { filter: saturate(1.12); }
+.brazil-state:hover { opacity: 1; filter: brightness(1.12) drop-shadow(0 2px 2px rgba(20,42,54,.28)); }
+.brazil-state.selected { opacity: 1; filter: brightness(1.16) drop-shadow(0 2px 4px rgba(20,42,54,.4)); }
+.brazil-label { font-size: 9px; font-weight: 900; }
+.state-results { scroll-margin-top: 100px; }
+.state-results-actions { display:flex; align-items:center; gap:12px; flex:0 0 auto; }
+.state-results-actions strong { color:#203c4d; white-space:nowrap; }
+@media(max-width:600px) {
+  .national-map-wrap { min-height:250px; }
+  .brazil-svg { width:100%; max-height:430px; }
+  .state-results-actions { align-items:flex-end; flex-direction:column; gap:7px; }
+  .state-results-actions .national-clear { white-space:nowrap; }
+}
