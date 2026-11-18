@@ -150,6 +150,7 @@ export default function App() {
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [topics, setTopics] = useState<Topic[]>([]);
   const [sessions, setSessions] = useState<StudySession[]>([]);
+  const [topicSessions, setTopicSessions] = useState<StudySession[]>([]);
   const [lessons, setLessons] = useState<Lesson[]>([]);
   const [search, setSearch] = useState("");
   const [stateFilter, setStateFilter] = useState("Todos os estados");
@@ -207,6 +208,20 @@ export default function App() {
         .limit(100);
 
       if (result.data) setSessions(result.data as StudySession[]);
+
+      const allTopicSessions: StudySession[] = [];
+      for (let from = 0; ; from += 1000) {
+        const topicPage = await supabase.from("study_sessions")
+          .select("id,duration_minutes,studied_at,notes,subject_id,topic_id")
+          .eq("user_id", userId)
+          .not("topic_id", "is", null)
+          .order("studied_at", { ascending: false })
+          .range(from, from + 999);
+        if (topicPage.error || !topicPage.data) break;
+        allTopicSessions.push(...(topicPage.data as StudySession[]));
+        if (topicPage.data.length < 1000) break;
+      }
+      setTopicSessions(allTopicSessions);
 
       const planResult = await supabase.from("study_plans")
         .select("weekly_goal_minutes")
@@ -401,6 +416,23 @@ export default function App() {
     return groups;
   }, {} as Record<string, { id: string; name: string; subject: string; minutes: number; sessions: number }>)).sort((a, b) => b.minutes - a.minutes);
   const maxTopicMinutes = Math.max(1, ...topicStudyStats.map(item => item.minutes));
+  const topicCoverageStats = topics.map(topic => {
+    const records = topicSessions.filter(item => item.topic_id === topic.id);
+    return {
+      ...topic,
+      subject: subjects.find(subject => subject.id === topic.subject_id)?.name || "Disciplina",
+      minutes: records.reduce((sum, item) => sum + item.duration_minutes, 0),
+      sessions: records.length,
+      lastStudiedAt: records[0]?.studied_at || null
+    };
+  }).sort((a, b) => a.subject.localeCompare(b.subject, "pt-BR") || a.sort_order - b.sort_order || a.name.localeCompare(b.name, "pt-BR"));
+  const coveredTopicCount = topicCoverageStats.filter(item => item.sessions > 0).length;
+  const topicCoveragePercent = topicCoverageStats.length ? Math.round(coveredTopicCount / topicCoverageStats.length * 100) : 0;
+  const topicCoverageBySubject = subjects.map(subject => ({
+    ...subject,
+    topics: topicCoverageStats.filter(topic => topic.subject_id === subject.id),
+    covered: topicCoverageStats.filter(topic => topic.subject_id === subject.id && topic.sessions > 0).length
+  })).filter(item => item.topics.length);
     if (page === "landing") {
     return (
       <div className="site-shell">
@@ -1184,6 +1216,40 @@ export default function App() {
                   <p>Ao registrar uma sessão, selecione também o assunto estudado. Assim, o APROVEI mostrará quais partes do edital já receberam atenção.</p>
                 )}
                 <p className="ap-chart-note">A evolução considera os assuntos informados nas sessões registradas nesta semana. Não é uma marcação manual de conclusão.</p>
+              </section>
+
+              <section className="ap-topic-coverage">
+                <div className="ap-subject-performance-heading">
+                  <div><span className="eyebrow">VISÃO GERAL DO EDITAL</span><h2>Mapa de cobertura dos assuntos</h2></div>
+                  <strong>{topicCoveragePercent}%</strong>
+                </div>
+                {topicCoverageStats.length ? (
+                  <>
+                    <div className="ap-coverage-summary">
+                      <div className="ap-goal-track"><span style={{ width: topicCoveragePercent + "%" }} /></div>
+                      <p><b>{coveredTopicCount} de {topicCoverageStats.length} assuntos</b> já possuem sessões de estudo registradas.</p>
+                    </div>
+                    <div className="ap-coverage-subjects">
+                      {topicCoverageBySubject.map(subject => (
+                        <article className="ap-coverage-subject" key={subject.id}>
+                          <div className="ap-coverage-subject-heading"><strong>{subject.name}</strong><span>{subject.covered}/{subject.topics.length} com registro</span></div>
+                          <div className="ap-coverage-topic-list">
+                            {subject.topics.map(topic => (
+                              <div className="ap-coverage-topic" key={topic.id}>
+                                <span className={topic.sessions ? "ap-coverage-dot is-covered" : "ap-coverage-dot"} />
+                                <span className="ap-coverage-topic-name">{topic.name}</span>
+                                <small>{topic.sessions ? `${topic.sessions} sessões · ${Math.floor(topic.minutes / 60)}h ${topic.minutes % 60}min` : "Sem registro"}</small>
+                              </div>
+                            ))}
+                          </div>
+                        </article>
+                      ))}
+                    </div>
+                    <p className="ap-chart-note">“Sem registro” significa que ainda não há sessão vinculada àquele assunto no APROVEI. Isso não confirma que o aluno nunca estudou o conteúdo.</p>
+                  </>
+                ) : (
+                  <p>O mapa será exibido quando houver assuntos cadastrados nos editais e disciplinas da plataforma.</p>
+                )}
               </section>
 
               <section className="ap-performance-chart">
