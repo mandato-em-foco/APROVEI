@@ -2525,3 +2525,10 @@ r(--mint-dark); }
 .planner-session-area{margin-top:72px;padding-top:54px;border-top:1px solid #e1e9eb}
 @media(max-width:850px){.student-sidebar{width:285px}.student-content{padding:32px 20px 55px}.ap-planner-choices{grid-template-columns:1fr}}
 @media(max-width:600px){.student-topbar{min-height:90px;padding:15px 17px}.student-topbar h1{font-size:22px}.student-content{padding:30px 16px 48px}.student-panel{padding:22px 18px}.student-metrics,.student-grid,.quick-actions{grid-template-columns:1fr}.ap-planner-choice{padding:24px 20px}.ap-planner-fields,.ap-subject-picker>div{grid-template-columns:1fr}.ap-day-picker{padding:16px 12px}}
+
+
+.contest-empty-panel{max-width:760px;margin:20px auto 0;padding:42px;text-align:center;background:linear-gradient(145deg,#fff,#f1f7f5)}
+.contest-empty-panel .welcome-icon{margin:0 auto 18px;background:#e2f3ec;color:#287b68}
+.contest-empty-panel h2{margin:10px 0;color:#173c48;font:900 25px 'Manrope',sans-serif}
+.contest-empty-panel p{max-width:580px;margin:0 auto 24px;color:#71848b;font-size:13px;line-height:1.9}
+@media(max-width:600px){.contest-empty-panel{padding:28px 20px}.contest-empty-panel .button{width:100%}}
