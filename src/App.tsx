@@ -15,6 +15,7 @@ type Page = "landing" | "login" | "signup" | "dashboard" | "contests" | "nationa
 type Contest = {
   id: string;
   title: string;
+  sphere: string;
   state: string | null;
   city: string | null;
   level: string | null;
@@ -168,7 +169,7 @@ export default function App() {
 
     const [contestResult, subjectResult, lessonResult, topicResult] = await Promise.all([
       supabase.from("contests")
-        .select("id,title,state,city,level,status,deadline,official_url,registration_url,vacancies,salary_min,salary_max,exam_date")
+        .select("id,title,sphere,state,city,level,status,deadline,official_url,registration_url,vacancies,salary_min,salary_max,exam_date")
         .in("status", ["open", "upcoming"])
         .order("deadline", { ascending: true })
         .limit(100),
