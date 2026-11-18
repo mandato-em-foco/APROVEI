@@ -2774,3 +2774,155 @@ r(--mint-dark); }
 .ap-position-field>small{color:#71848b;font-size:11px;line-height:1.6}
 .ap-position-loading,.ap-position-hint{margin:0;padding:13px 15px;border:1px solid #aab8bf;border-radius:12px;background:#f5f8fa;color:#526b78;font-size:12px;line-height:1.7}
 .ap-position-field select{width:100%}
+
+
+/* Correção responsiva reforçada — planejador e área do aluno em celulares */
+.ap-planner,
+.ap-planner > *,
+.ap-planner-form,
+.ap-planner-choice,
+.ap-today-panel,
+.ap-saved-plans,
+.ap-saved-card,
+.ap-saved-schedule,
+.ap-position-field,
+.ap-planner-fields,
+.ap-subject-picker,
+.ap-day-picker {
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+.ap-planner-form > label,
+.ap-planner-form input,
+.ap-planner-form select,
+.ap-position-field select {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+.ap-planner-form input,
+.ap-planner-form select {
+  font-size: 16px;
+}
+.ap-day-picker > div,
+.ap-subject-picker > div {
+  min-width: 0;
+  max-width: 100%;
+}
+.ap-subject-picker label,
+.ap-saved-session,
+.ap-today-item {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+@media (max-width: 850px) {
+  .student-shell {
+    width: 100%;
+    min-width: 0;
+    overflow-x: clip;
+  }
+  .student-main {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+  }
+  .student-topbar {
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+    gap: 10px;
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+  .student-content {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    box-sizing: border-box;
+    padding: 26px 16px 44px;
+    overflow-x: clip;
+  }
+  .ap-planner {
+    width: 100%;
+    gap: 22px;
+  }
+  .ap-planner-form {
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    padding: 20px 16px;
+    gap: 17px;
+  }
+  .ap-planner-form h2 {
+    font-size: clamp(22px, 6vw, 27px);
+    line-height: 1.25;
+    overflow-wrap: anywhere;
+  }
+  .ap-planner-choices {
+    width: 100%;
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .ap-planner-fields,
+  .ap-subject-picker > div {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+@media (max-width: 600px) {
+  .student-shell,
+  .student-main,
+  .student-content,
+  .ap-planner,
+  .ap-planner-form {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+  }
+  .student-topbar {
+    min-height: 76px;
+    padding: 12px 14px;
+  }
+  .student-topbar > div {
+    min-width: 0;
+    flex: 1 1 auto;
+  }
+  .student-topbar h1 {
+    font-size: 20px;
+    line-height: 1.25;
+    overflow-wrap: anywhere;
+  }
+  .student-content {
+    padding: 22px 12px 38px;
+  }
+  .ap-planner-form {
+    padding: 18px 13px;
+    border-radius: 17px;
+  }
+  .ap-planner-choice {
+    padding: 21px 17px;
+  }
+  .ap-day-picker,
+  .ap-subject-picker {
+    padding: 15px 11px;
+  }
+  .ap-day-picker > div {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 7px;
+  }
+  .ap-day-picker button {
+    min-width: 0;
+    width: 100%;
+    padding: 0 4px;
+  }
+  .ap-position-loading,
+  .ap-position-hint,
+  .ap-auto-note {
+    overflow-wrap: anywhere;
+  }
+  .ap-saved-card-toggle {
+    min-width: 0;
+    flex-wrap: wrap;
+  }
+}
