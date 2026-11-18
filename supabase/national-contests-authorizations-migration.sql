@@ -42,6 +42,8 @@ drop policy if exists "Public can read contest authorizations" on public.contest
 create policy "Public can read contest authorizations"
   on public.contest_authorizations for select using (true);
 
+grant select on public.contest_authorizations to anon, authenticated;
+
 commit;
 
 -- Inserções e atualizações desta tabela devem ser feitas por administração
