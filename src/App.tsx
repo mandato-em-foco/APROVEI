@@ -342,10 +342,10 @@ export default function App() {
             <button onClick={() => goToSection("concursos")}>Concursos</button>
             <button onClick={() => goToSection("planos")}>Planos</button>
             <button onClick={() => goToSection("duvidas")}>Dúvidas</button>
-            <button className="mobile-login" onClick={() => go("login")}>Entrar</button>
+            <button className="mobile-login" onClick={() => go(session ? "dashboard" : "login")}>{session ? "Minha área" : "Entrar"}</button>
           </nav>
           <div className="header-actions">
-            <button className="button button-outline" onClick={() => go("login")}>Entrar</button>
+            <button className="button button-outline" onClick={() => go(session ? "dashboard" : "login")}>{session ? "Minha área" : "Entrar"}</button>
             <button className="button button-primary" onClick={() => go("signup")}>Começar agora <ArrowRight size={16} /></button>
           </div>
           <button className="menu-toggle" onClick={() => setMobileMenu(!mobileMenu)} aria-label="Abrir menu">
@@ -519,7 +519,7 @@ export default function App() {
             <div><b>APROVEI</b><small>Sua aprovação começa aqui!</small></div>
           </div>
           <p>Organização, estratégia e evolução para sua preparação.</p>
-          <div className="footer-links"><button onClick={() => go("login")}>Entrar</button><button onClick={() => go("signup")}>Criar conta</button><button onClick={() => goToSection("duvidas")}>Ajuda</button></div>
+          <div className="footer-links"><button onClick={() => go(session ? "dashboard" : "login")}>{session ? "Minha área" : "Entrar"}</button><button onClick={() => go("signup")}>Criar conta</button><button onClick={() => goToSection("duvidas")}>Ajuda</button></div>
           <small>© {new Date().getFullYear()} APROVEI. Todos os direitos reservados.</small>
         </footer>
       </div>
