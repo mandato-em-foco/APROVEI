@@ -49,6 +49,14 @@ export default function Planner({ contests, subjects, userId }: Props) {
   const [savedPlans, setSavedPlans] = useState<SavedPlan[]>([]);
   const [loadingPlans, setLoadingPlans] = useState(true);
   const [expandedPlanId, setExpandedPlanId] = useState<string | null>(null);
+  const [completedItemIds, setCompletedItemIds] = useState<string[]>([]);
+  const [completionBusy, setCompletionBusy] = useState<string | null>(null);
+  const [completionError, setCompletionError] = useState("");
+
+  const today = new Date();
+  const todayWeekday = today.getDay();
+  const todayKey = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,"0")}-${String(today.getDate()).padStart(2,"0")}`;
+  const todayLabel = today.toLocaleDateString("pt-BR", { weekday: "long", day: "2-digit", month: "long" });
 
   async function loadSavedPlans() {
     if (!supabase) { setLoadingPlans(false); return; }
@@ -69,6 +77,35 @@ export default function Planner({ contests, subjects, userId }: Props) {
     setLoadingPlans(false);
   }
   useEffect(() => { void loadSavedPlans(); }, [userId]);
+
+  async function loadTodayCompletions() {
+    if (!supabase) return;
+    const { data, error } = await supabase.from("study_plan_item_completions")
+      .select("plan_item_id")
+      .eq("user_id", userId)
+      .eq("completed_on", todayKey);
+    if (!error) setCompletedItemIds((data || []).map(row => row.plan_item_id));
+  }
+
+  useEffect(() => { void loadTodayCompletions(); }, [userId, todayKey]);
+
+  async function toggleCompletion(itemId: string, isCompleted: boolean) {
+    if (!supabase || completionBusy) return;
+    setCompletionBusy(itemId);
+    setCompletionError("");
+    if (isCompleted) {
+      const { error } = await supabase.from("study_plan_item_completions")
+        .delete().eq("user_id", userId).eq("plan_item_id", itemId).eq("completed_on", todayKey);
+      if (error) setCompletionError("Não foi possível atualizar a sessão: " + error.message);
+      else setCompletedItemIds(current => current.filter(id => id !== itemId));
+    } else {
+      const { error } = await supabase.from("study_plan_item_completions")
+        .insert({ user_id: userId, plan_item_id: itemId, completed_on: todayKey });
+      if (error) setCompletionError("Não foi possível registrar a sessão: " + error.message);
+      else setCompletedItemIds(current => [...current, itemId]);
+    }
+    setCompletionBusy(null);
+  }
 
   const selectedContest = contests.find(item => item.id === contestId);
 
@@ -267,6 +304,34 @@ export default function Planner({ contests, subjects, userId }: Props) {
 
   return (
     <div className="ap-planner">
+      <section className="ap-today-panel">
+        <div className="ap-today-heading">
+          <div><span className="eyebrow">ACOMPANHAMENTO DIÁRIO</span><h2>Estudos de hoje</h2><p>{todayLabel}</p></div>
+          <span className="ap-today-progress">{savedPlans.flatMap(plan => plan.items.filter(item => item.weekday === todayWeekday)).filter(item => completedItemIds.includes(item.id)).length} / {savedPlans.flatMap(plan => plan.items.filter(item => item.weekday === todayWeekday)).length} concluídas</span>
+        </div>
+        {(() => {
+          const todayItems = savedPlans.flatMap(plan => plan.items.filter(item => item.weekday === todayWeekday).map(item => ({ ...item, planTitle: plan.title })));
+          const completedCount = todayItems.filter(item => completedItemIds.includes(item.id)).length;
+          const percent = todayItems.length ? Math.round(completedCount / todayItems.length * 100) : 0;
+          return <>
+            <div className="ap-today-progress-track"><span style={{ width: percent + "%" }} /></div>
+            {todayItems.length ? <div className="ap-today-list">
+              {todayItems.map(item => {
+                const subject = subjects.find(entry => entry.id === item.subject_id);
+                const done = completedItemIds.includes(item.id);
+                return <label className={done ? "ap-today-item is-done" : "ap-today-item"} key={item.id}>
+                  <input type="checkbox" checked={done} disabled={completionBusy === item.id} onChange={() => void toggleCompletion(item.id, done)} />
+                  <span className="ap-today-check"><CheckCircle2 size={19}/></span>
+                  <span className="ap-today-copy"><strong>{subject?.name || "Disciplina"}</strong><small>{item.planTitle}</small></span>
+                  <span className="ap-today-minutes">{item.duration_minutes} min</span>
+                </label>;
+              })}
+            </div> : <div className="ap-today-empty"><CalendarDays size={21}/><span>Não há sessões previstas para hoje nos seus planejamentos. Consulte sua grade semanal abaixo.</span></div>}
+            {completionError && <p className="ap-today-error" role="alert">{completionError}</p>}
+            {todayItems.length > 0 && <p className="ap-today-footnote">{percent === 100 ? "Parabéns! Você concluiu todas as sessões previstas para hoje." : `Você concluiu ${completedCount} de ${todayItems.length} sessões previstas para hoje.`}</p>}
+          </>;
+        })()}
+      </section>
       <section className="ap-saved-plans">
         <div className="ap-saved-heading">
           <div><span className="eyebrow">SUA ROTINA</span><h2>Meus planejamentos</h2><p>Seus horários ficam salvos na sua conta. Volte aqui quando quiser continuar.</p></div>
