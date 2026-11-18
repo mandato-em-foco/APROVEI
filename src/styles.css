@@ -2926,3 +2926,24 @@ r(--mint-dark); }
     flex-wrap: wrap;
   }
 }
+
+/* Ajuste de contraste tipográfico — leitura mais confortável */
+:root {
+  color: #1b3440;
+  --ink: #1b3542;
+  --ink-soft: #405966;
+  --muted: #526872;
+}
+.student-shell p,
+.student-shell small,
+.student-shell label,
+.student-shell .ap-position-field > small {
+  color: #4b606a;
+}
+.student-shell h1,
+.student-shell h2,
+.student-shell h3,
+.student-shell h4 {
+  color: #1d3b49;
+}
+
