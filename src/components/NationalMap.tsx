@@ -33,7 +33,7 @@ const stateNameToUF: Record<string,string> = {
   "santa catarina":"SC","sao paulo":"SP","sergipe":"SE","tocantins":"TO"
 };
 function normalizeStateName(value: unknown) {
-  return String(value || "").normalize("NFD").replace(/[\\u0300-\\u036f]/g,"").toLowerCase().trim();
+  return String(value || "").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().trim();
 }
 function getUF(properties: any): string {
   const raw = properties?.abbreviation || properties?.sigla || properties?.postal ||
