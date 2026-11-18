@@ -2947,3 +2947,25 @@ r(--mint-dark); }
   color: #1d3b49;
 }
 
+/* Ações disponíveis ao expandir um planejamento salvo */
+.ap-saved-actions {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 8px;
+}
+.ap-saved-actions .button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 42px;
+}
+@media (max-width: 600px) {
+  .ap-saved-actions {
+    justify-content: stretch;
+  }
+  .ap-saved-actions .button {
+    width: 100%;
+  }
+}
+
