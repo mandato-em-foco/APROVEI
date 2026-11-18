@@ -38,7 +38,7 @@ where not exists (select 1 from public.contests where title = 'Conselho Regional
 
 insert into public.contests (
   title, sphere, state, city, level, status, vacancies,
-  salary_min, salary_max, registration_start, deadline,
+  salary_min, salary_max, registration_start, deadline, exam_date,
   official_url, registration_url, source_url, last_verified_at
 )
 select
