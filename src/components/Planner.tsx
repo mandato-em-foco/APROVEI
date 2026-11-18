@@ -84,7 +84,7 @@ export default function Planner({ contests, subjects, userId }: Props) {
       return;
     }
 
-    if (!contestId) {
+    if (mode === "automatic" && !contestId) {
       setNotice("Selecione o concurso ou a área de preparação.");
       return;
     }
@@ -198,7 +198,7 @@ export default function Planner({ contests, subjects, userId }: Props) {
       .from("study_plans")
       .insert({
         user_id: userId,
-        contest_id: contestId,
+        contest_id: contestId || null,
         title: title.trim() || "Meu planejamento",
         mode,
         daily_goal_minutes: dailyMinutes,
@@ -348,13 +348,13 @@ export default function Planner({ contests, subjects, userId }: Props) {
           </label>
 
           <label>
-            Concurso ou área de preparação
+            {mode === "automatic" ? "Concurso com edital cadastrado" : "Concurso (opcional)"}
             <select
               value={contestId}
               onChange={event => setContestId(event.target.value)}
-              required
+              required={mode === "automatic"}
             >
-              <option value="">Selecione o concurso</option>
+              <option value="">{mode === "automatic" ? "Selecione o concurso" : "Estudo geral — sem concurso definido"}</option>
               {contests.map(contest => (
                 <option key={contest.id} value={contest.id}>
                   {contest.title}{contest.state ? " • " + contest.state : ""}
