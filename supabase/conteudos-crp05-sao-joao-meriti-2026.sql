@@ -284,3 +284,103 @@ where (c.title ilike '%CRP-05%' and m.subject_name like 'CRP-05 |%')
 on conflict (position_id,subject_id) do nothing;
 
 commit;
+
+
+-- Complemento: programas específicos dos cargos de Professor I (Anexo III do IBAM).
+begin;
+
+insert into public.subjects(name) values
+ ('São João de Meriti | Conhecimentos Específicos — Professor I Ciências'),
+ ('São João de Meriti | Conhecimentos Específicos — Professor I Educação Artística'),
+ ('São João de Meriti | Conhecimentos Específicos — Professor I Educação Física'),
+ ('São João de Meriti | Conhecimentos Específicos — Professor I Geografia'),
+ ('São João de Meriti | Conhecimentos Específicos — Professor I História'),
+ ('São João de Meriti | Conhecimentos Específicos — Professor I Língua Inglesa'),
+ ('São João de Meriti | Conhecimentos Específicos — Professor I Língua Portuguesa'),
+ ('São João de Meriti | Conhecimentos Específicos — Professor I Matemática')
+on conflict (name) do nothing;
+
+with syllabus(subject_name,topic_name,sort_order) as (values
+('São João de Meriti | Conhecimentos Específicos — Professor I Ciências','Terra e Universo: atmosfera, água, tratamento de água e esgoto, crosta, rochas, fósseis, solo, erosão, movimentos da Terra, Sol e Lua, placas tectônicas e deriva continental.',1),
+('São João de Meriti | Conhecimentos Específicos — Professor I Ciências','Seres vivos: cinco Reinos e três Domínios, vírus, fisiologia animal, reprodução e fisiologia vegetal.',2),
+('São João de Meriti | Conhecimentos Específicos — Professor I Ciências','Biologia celular: composição química, células procarióticas e eucarióticas, membrana, transporte, organelas, núcleo, cromossomos e divisão celular.',3),
+('São João de Meriti | Conhecimentos Específicos — Professor I Ciências','Histologia animal e vegetal: tecidos epitelial, conjuntivo, muscular, nervoso, meristemas, parênquima, xilema, floema e tecidos de revestimento.',4),
+('São João de Meriti | Conhecimentos Específicos — Professor I Ciências','Anatomia e fisiologia humanas: sistemas digestivo, respiratório, circulatório, urinário, endócrino, nervoso, reprodutor, locomotor e sentidos.',5),
+('São João de Meriti | Conhecimentos Específicos — Professor I Ciências','Genética: leis de Mendel, genealogias, herança, sistemas ABO e Rh, cromossomos sexuais e aneuploidias.',6),
+('São João de Meriti | Conhecimentos Específicos — Professor I Ciências','Origem da vida e evolução: abiogênese, biogênese, hipóteses sobre a origem da vida e teorias evolutivas.',7),
+('São João de Meriti | Conhecimentos Específicos — Professor I Ciências','Ecologia: níveis de organização, ecossistemas, biomas, cadeias, teias, energia, ciclos biogeoquímicos, relações ecológicas e impactos ambientais; Leis nº 9.795/1999 e nº 9.985/2000.',8),
+('São João de Meriti | Conhecimentos Específicos — Professor I Ciências','Saúde: conceitos de saúde e doença, epidemias, endemias, pandemias, imunidade, antibióticos, vacinas, viroses, bacterioses, protozooses e verminoses.',9),
+('São João de Meriti | Conhecimentos Específicos — Professor I Ciências','Química Geral: medições, unidades, matéria, energia, substâncias, misturas, átomo, ligações, funções e reações químicas.',10),
+('São João de Meriti | Conhecimentos Específicos — Professor I Ciências','Física Básica: mecânica, energia, temperatura, calor, ondas, instrumentos ópticos, eletricidade e magnetismo.',11),
+('São João de Meriti | Conhecimentos Específicos — Professor I Educação Artística','História da arte brasileira e universal: manifestações de diferentes épocas, características e artistas.',1),
+('São João de Meriti | Conhecimentos Específicos — Professor I Educação Artística','História do ensino de arte no Brasil: fundamentos e tendências pedagógicas.',2),
+('São João de Meriti | Conhecimentos Específicos — Professor I Educação Artística','Parâmetros Curriculares Nacionais e ensino de arte nas diferentes linguagens.',3),
+('São João de Meriti | Conhecimentos Específicos — Professor I Educação Artística','Base Nacional Comum Curricular (BNCC) e arte na educação.',4),
+('São João de Meriti | Conhecimentos Específicos — Professor I Educação Artística','Arte na educação escolar: objetivos, conteúdos, métodos, avaliação, elementos básicos e relações compositivas.',5),
+('São João de Meriti | Conhecimentos Específicos — Professor I Educação Artística','Folclore brasileiro e manifestações artístico-culturais populares.',6),
+('São João de Meriti | Conhecimentos Específicos — Professor I Educação Artística','Arte na atualidade: tecnologias e novas formas de manifestações artísticas.',7),
+('São João de Meriti | Conhecimentos Específicos — Professor I Educação Física','Educação Física no contexto da Educação, função social, objetivos gerais, avaliação e papel do professor.',1),
+('São João de Meriti | Conhecimentos Específicos — Professor I Educação Física','Metodologia, didática, organização do conhecimento, abordagens metodológicas e seleção de conteúdos.',2),
+('São João de Meriti | Conhecimentos Específicos — Professor I Educação Física','Novas perspectivas, BNCC, sociedade, cultura e história da Educação Física no Brasil.',3),
+('São João de Meriti | Conhecimentos Específicos — Professor I Educação Física','Aprendizagem motora, desenvolvimento motor e Psicologia da Aprendizagem.',4),
+('São João de Meriti | Conhecimentos Específicos — Professor I Educação Física','Fisiologia do exercício, atividade física, promoção da saúde e Educação Física escolar.',5),
+('São João de Meriti | Conhecimentos Específicos — Professor I Educação Física','Esporte escolar, jogos, brincadeiras, lutas, danças e ginásticas.',6),
+('São João de Meriti | Conhecimentos Específicos — Professor I Educação Física','Educação Física inclusiva; Leis nº 10.639/2003 e nº 11.645/2008.',7),
+('São João de Meriti | Conhecimentos Específicos — Professor I Educação Física','Dimensões filosóficas, antropológicas e sociais; lazer, primeiros socorros, cidadania e projeto político-pedagógico.',8),
+('São João de Meriti | Conhecimentos Específicos — Professor I Geografia','Objeto de estudo, conceitos fundamentais, teoria e história do pensamento geográfico; espaço como produto histórico e social.',1),
+('São João de Meriti | Conhecimentos Específicos — Professor I Geografia','Cartografia: escalas, projeções, convenções, mapas, gráficos, coordenadas geográficas, fusos horários e leitura de representações.',2),
+('São João de Meriti | Conhecimentos Específicos — Professor I Geografia','Natureza e meio ambiente: sistema solar, dinâmica geológica, recursos naturais, sustentabilidade, solos, atmosfera, clima, hidrografia e vegetação.',3),
+('São João de Meriti | Conhecimentos Específicos — Professor I Geografia','Globalização, política neoliberal, economia global, poder, tecnologias da informação e ciberespaço.',4),
+('São João de Meriti | Conhecimentos Específicos — Professor I Geografia','Espaço industrial: industrialização, modelos produtivos, revoluções técnico-científicas e divisão internacional do trabalho.',5),
+('São João de Meriti | Conhecimentos Específicos — Professor I Geografia','Espaço urbano: urbanização, relações campo-cidade, problemas urbanos, meio ambiente urbano e planejamento.',6),
+('São João de Meriti | Conhecimentos Específicos — Professor I Geografia','População: crescimento, estrutura, migrações, teorias demográficas, transição demográfica, desigualdades e refugiados.',7),
+('São João de Meriti | Conhecimentos Específicos — Professor I Geografia','Espaço agrário: estrutura fundiária, conflitos, modernização, agricultura, produção e comércio internacional.',8),
+('São João de Meriti | Conhecimentos Específicos — Professor I Geografia','Comércio, transportes e serviços; fake news, circulação de informação e cultura.',9),
+('São João de Meriti | Conhecimentos Específicos — Professor I Geografia','Geopolítica: blocos de poder, Estados, organismos multilaterais, conflitos, Guerra Fria, ordem mundial e regionalização brasileira.',10),
+('São João de Meriti | Conhecimentos Específicos — Professor I História','Teoria da História e correntes historiográficas: positivismo, materialismo histórico, Escola dos Annales, história oral e do cotidiano.',1),
+('São João de Meriti | Conhecimentos Específicos — Professor I História','Relações entre sociedade, economia, cultura, natureza e terra na História do Brasil, das Américas e da África.',2),
+('São João de Meriti | Conhecimentos Específicos — Professor I História','Relações de trabalho: escravização indígena e africana, resistências, emancipação, imigração, trabalho urbano, rural, feminino e infantil.',3),
+('São João de Meriti | Conhecimentos Específicos — Professor I História','Organizações de trabalhadores, sindicatos, movimentos sociais e relações de trabalho em diferentes sociedades e períodos.',4),
+('São João de Meriti | Conhecimentos Específicos — Professor I História','Cidadania no Brasil e no mundo: direitos, constituições, autoritarismo, democracia, revoluções e movimentos políticos.',5),
+('São João de Meriti | Conhecimentos Específicos — Professor I Língua Inglesa','Métodos e abordagens de ensino: metodologias pré-comunicativas, humanísticas e comunicativas; competência comunicativa e Inglês Instrumental.',1),
+('São João de Meriti | Conhecimentos Específicos — Professor I Língua Inglesa','Compreensão de textos: estratégias de leitura global e pontual, gêneros, inferência, dedução, contexto, coesão e coerência.',2),
+('São João de Meriti | Conhecimentos Específicos — Professor I Língua Inglesa','Léxico-gramática: derivação, sintagmas nominal, verbal, adverbial e preposicional, tempos, aspecto, modalidade, voz, concordância e verbos frasais.',3),
+('São João de Meriti | Conhecimentos Específicos — Professor I Língua Inglesa','Perspectivas discursivas: discurso direto e relatado, funções comunicativas e inglês escrito e falado nas novas tecnologias.',4),
+('São João de Meriti | Conhecimentos Específicos — Professor I Língua Portuguesa','Abordagens de ensino: língua, gramática, concepções de ensino, texto literário, leitura e escrita.',1),
+('São João de Meriti | Conhecimentos Específicos — Professor I Língua Portuguesa','Construção e sentido dos textos: gêneros, tipologias, progressão temática, coesão, coerência, parágrafo e argumentação.',2),
+('São João de Meriti | Conhecimentos Específicos — Professor I Língua Portuguesa','Perspectivas enunciativas: enunciador, interlocutor, espaço, tempo, polifonia, intertextualidade, inferência, pressuposição e variação linguística.',3),
+('São João de Meriti | Conhecimentos Específicos — Professor I Língua Portuguesa','Semântica e estilística: sentido dos vocábulos, tempos e modos verbais, concordância, figuras, polissemia, sinonímia, antonímia e paronímia.',4),
+('São João de Meriti | Conhecimentos Específicos — Professor I Língua Portuguesa','Morfossintaxe: classes gramaticais, formação e flexão de palavras, termos da oração, coordenação, subordinação, regência e colocação pronominal.',5),
+('São João de Meriti | Conhecimentos Específicos — Professor I Língua Portuguesa','Elementos da escrita: grafia, acentuação e pontuação.',6),
+('São João de Meriti | Conhecimentos Específicos — Professor I Matemática','Números e operações: conjuntos, conjuntos numéricos, operações, múltiplos, divisores, MDC, MMC, primos, porcentagem e médias.',1),
+('São João de Meriti | Conhecimentos Específicos — Professor I Matemática','Álgebra e funções: polinômios, frações algébricas, funções inversa e composta, afim, quadrática, exponencial e logarítmica.',2),
+('São João de Meriti | Conhecimentos Específicos — Professor I Matemática','Equações, inequações, sistemas, progressões, juros simples e compostos, matrizes, determinantes e análise combinatória.',3),
+('São João de Meriti | Conhecimentos Específicos — Professor I Matemática','Espaço e forma: geometria analítica, polígonos, circunferência, semelhança, trigonometria e sólidos geométricos.',4),
+('São João de Meriti | Conhecimentos Específicos — Professor I Matemática','Grandezas e medidas: unidades, comprimento da circunferência, áreas, áreas e volumes de sólidos.',5),
+('São João de Meriti | Conhecimentos Específicos — Professor I Matemática','Tratamento da informação: proporcionalidade, estatística, variáveis, frequências, gráficos, histogramas, medidas, probabilidade e BNCC.',6)
+)
+insert into public.topics(subject_id,name,sort_order)
+select s.id,x.topic_name,x.sort_order
+from syllabus x join public.subjects s on s.name=x.subject_name
+on conflict (subject_id,name) do nothing;
+
+with mapping(position_title,subject_name) as (values
+('Professor I – Ciências','São João de Meriti | Conhecimentos Específicos — Professor I Ciências'),
+('Professor I – Educação Artística','São João de Meriti | Conhecimentos Específicos — Professor I Educação Artística'),
+('Professor I – Educação Física','São João de Meriti | Conhecimentos Específicos — Professor I Educação Física'),
+('Professor I – Geografia','São João de Meriti | Conhecimentos Específicos — Professor I Geografia'),
+('Professor I – História','São João de Meriti | Conhecimentos Específicos — Professor I História'),
+('Professor I – Língua Inglesa','São João de Meriti | Conhecimentos Específicos — Professor I Língua Inglesa'),
+('Professor I – Língua Portuguesa','São João de Meriti | Conhecimentos Específicos — Professor I Língua Portuguesa'),
+('Professor I – Matemática','São João de Meriti | Conhecimentos Específicos — Professor I Matemática')
+)
+insert into public.contest_position_subjects(position_id,subject_id,priority,suggested_weekly_minutes)
+select p.id,s.id,1,180
+from mapping m
+join public.subjects s on s.name=m.subject_name
+join public.contest_positions p on p.title=m.position_title
+join public.contests c on c.id=p.contest_id
+where c.title ilike '%São João de Meriti%' and c.title ilike '%01/2026%'
+on conflict (position_id,subject_id) do nothing;
+
+commit;
