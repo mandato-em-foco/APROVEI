@@ -64,10 +64,10 @@ export default function NationalMap({ contests }: { contests: Contest[] }) {
           {geo ? <svg className="brazil-svg" viewBox="0 0 610 590" role="img" aria-label="Mapa interativo dos estados brasileiros">
             {stateFeatures.map(feature=>{const uf=feature.properties.abbreviation;const active=selected===uf;return <path key={uf} d={geometryPath(feature.geometry,project)} fill={regions[uf]?.color||"#78909c"} className={active?"brazil-state selected":"brazil-state"} onClick={()=>setSelected(active?"":uf)} role="button" tabIndex={0} aria-label={feature.properties.name} onKeyDown={e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();setSelected(active?"":uf)}}}><title>{feature.properties.name}</title></path>})}
             {stateFeatures.map(f=>{const p=project(centroid(f.geometry));return <text key={f.properties.abbreviation} x={p[0]} y={p[1]} className="brazil-label" pointerEvents="none">{f.properties.abbreviation}</text>})}
-          </svg> : <div className="national-map-loading">{geoError||"Carregando mapa do Brasil..."}</div>}
+          </svg> : <div className="national-map-loading"><p>{geoError||"Carregando mapa do Brasil..."}</p><div className="national-state-fallback">{Object.keys(regions).sort().map(uf=><button key={uf} className={selected===uf?"active":""} onClick={()=>setSelected(selected===uf?"":uf)}>{uf}</button>)}</div></div>}
         </div>
         <div className="national-legend">{["Norte","Nordeste","Centro-Oeste","Sudeste","Sul"].map((r,i)=><span key={r}><i style={{background:["#2878a8","#d58a27","#6e58ae","#26977f","#bd5571"][i]}}/>{r}</span>)}</div>
-        <p className="national-map-note">{stateCount} unidades federativas • Toque em um estado para filtrar as oportunidades.</p>
+        <p className="national-map-note">{stateCount} unidades federativas • Toque em um estado para filtrar as oportunidades. Geometria cartográfica: <a href="https://github.com/codeforgermany/click_that_hood" target="_blank" rel="noreferrer">click_that_hood</a>.</p>
       </section>
       <button className="authorized-tile" onClick={()=>setShowAuthorized(v=>!v)} aria-expanded={showAuthorized}>
         <span className="authorized-icon"><ShieldCheck size={25}/></span><span className="eyebrow">ACOMPANHAMENTO</span><strong>Concursos autorizados</strong><span className="authorized-number">{authorizations.length}</span><small>Sem edital publicado • apenas informações da autorização</small><span className="authorized-open">{showAuthorized?"Fechar lista":"Abrir lista"} <ChevronRight size={17}/></span>
