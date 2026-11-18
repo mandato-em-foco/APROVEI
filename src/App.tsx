@@ -20,6 +20,11 @@ type Contest = {
   status: string;
   deadline: string | null;
   official_url: string | null;
+  vacancies: number | null;
+  salary_min: number | null;
+  salary_max: number | null;
+  exam_date: string | null;
+  subject_names: string[];
 };
 
 type Subject = { id: string; name: string };
@@ -155,7 +160,7 @@ export default function App() {
 
     const [contestResult, subjectResult, lessonResult] = await Promise.all([
       supabase.from("contests")
-        .select("id,title,state,city,level,status,deadline,official_url")
+        .select("id,title,state,city,level,status,deadline,official_url,vacancies,salary_min,salary_max,exam_date")
         .in("status", ["open", "upcoming"])
         .order("deadline", { ascending: true })
         .limit(100),
@@ -167,7 +172,22 @@ export default function App() {
         .limit(100)
     ]);
 
-    if (contestResult.data) setContests(contestResult.data as Contest[]);
+    if (contestResult.data) {
+      const { data: contestSubjectRows } = await supabase
+        .from("contest_subjects")
+        .select("contest_id,subjects(name)");
+      const namesByContest = new Map<string, string[]>();
+      for (const row of (contestSubjectRows || []) as any[]) {
+        const subject = Array.isArray(row.subjects) ? row.subjects[0] : row.subjects;
+        if (subject?.name) {
+          namesByContest.set(row.contest_id, [...(namesByContest.get(row.contest_id) || []), subject.name]);
+        }
+      }
+      setContests(contestResult.data.map((contest: any) => ({
+        ...contest,
+        subject_names: namesByContest.get(contest.id) || []
+      })) as Contest[]);
+    }
     if (subjectResult.data) setSubjects(subjectResult.data as Subject[]);
     if (lessonResult.data) setLessons(lessonResult.data as Lesson[]);
 
@@ -829,12 +849,32 @@ export default function App() {
 
                       <div className="contest-meta">
                         <span>{contest.level || "Escolaridade não informada"}</span>
+                        {contest.vacancies !== null && contest.vacancies !== undefined && (
+                          <span>{contest.vacancies} vagas imediatas</span>
+                        )}
                         {contest.deadline && (
                           <span>
-                            Prazo: {new Date(contest.deadline).toLocaleDateString("pt-BR")}
+                            Inscrições até: {new Date(contest.deadline + "T12:00:00").toLocaleDateString("pt-BR")}
+                          </span>
+                        )}
+                        {contest.exam_date && (
+                          <span>Prova: {new Date(contest.exam_date + "T12:00:00").toLocaleDateString("pt-BR")}</span>
+                        )}
+                        {(contest.salary_min || contest.salary_max) && (
+                          <span>
+                            Remuneração: {contest.salary_min && contest.salary_max && contest.salary_min !== contest.salary_max
+                              ? "R$ " + Number(contest.salary_min).toLocaleString("pt-BR") + " a R$ " + Number(contest.salary_max).toLocaleString("pt-BR")
+                              : "R$ " + Number(contest.salary_max || contest.salary_min).toLocaleString("pt-BR")}
                           </span>
                         )}
                       </div>
+
+                      {contest.subject_names.length > 0 && (
+                        <div className="contest-subjects">
+                          <strong>Disciplinas do edital</strong>
+                          <div>{contest.subject_names.map(name => <span key={name}>{name}</span>)}</div>
+                        </div>
+                      )}
 
                       {contest.official_url && (
                         <a
