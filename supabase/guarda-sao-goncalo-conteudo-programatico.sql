@@ -4,6 +4,25 @@
 
 begin;
 
+-- Garante que o concurso exista mesmo se a carga inicial de concursos ainda não tiver sido executada.
+insert into public.contests (
+  title, sphere, state, city, level, status, vacancies,
+  registration_start, deadline, official_url, registration_url, source_url,
+  last_verified_at
+)
+select
+  'Prefeitura Municipal de São Gonçalo - RJ — Guarda Municipal Nível II 2026',
+  'municipal', 'RJ', 'São Gonçalo', 'Nível médio', 'open', 100,
+  date '2026-09-28', date '2026-11-18',
+  'https://selecon.selecao.net.br/informacoes/73/',
+  'https://selecon.selecao.net.br/informacoes/73/',
+  'https://anexos-r2.selecao.net.br/uploads/746/concursos/73/anexos/70806270-5032-4fd8-afb7-6a89b5327fc8.pdf',
+  now()
+where not exists (
+  select 1 from public.contests
+  where title = 'Prefeitura Municipal de São Gonçalo - RJ — Guarda Municipal Nível II 2026'
+);
+
 insert into public.subjects(name) values
   ('Direito Penal'),
   ('Direito Processual Penal'),
