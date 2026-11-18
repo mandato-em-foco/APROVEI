@@ -384,3 +384,23 @@ where c.title ilike '%São João de Meriti%' and c.title ilike '%01/2026%'
 on conflict (position_id,subject_id) do nothing;
 
 commit;
+
+
+-- Complemento do conteúdo específico de Agente Administrativo do CRP-05 (itens 2 a 10).
+begin;
+with syllabus(topic_name,sort_order) as (values
+('Rotinas e procedimentos administrativos: organização e execução de atividades; controle de documentos e informações; relatórios, formulários, planilhas, agendas, reuniões, eventos e prazos.',2),
+('Atendimento ao público: atendimento presencial, telefônico e digital; comunicação, qualidade, relacionamento, reclamações, acessibilidade e resolução de conflitos.',3),
+('Gestão documental e arquivologia: protocolo, recebimento, registro, classificação, tramitação, expedição, arquivos físicos e digitais, conservação e recuperação.',4),
+('Redação oficial e comunicação administrativa: clareza, concisão, objetividade, padronização, ofícios, e-mails, atas, comunicados, relatórios e Manual de Redação da Presidência.',5),
+('Administração Pública: organização, administração direta e indireta, atos administrativos, serviços públicos e direitos dos usuários.',6),
+('Gestão de materiais e patrimônio: estoque, almoxarifado, recebimento, conferência, armazenamento, distribuição, inventário e conservação de bens.',7),
+('Administração financeira e contratações: controle financeiro, receitas, despesas, pagamentos, prestação de contas e Lei nº 14.133/2021.',8),
+('Informática aplicada: editores de texto, planilhas, apresentações, e-mail, internet, arquivos digitais, sistemas administrativos e segurança digital.',9),
+('Apoio administrativo aos Conselhos de Psicologia: inscrições, atualização cadastral, registros, processos, apoio à orientação e fiscalização e controle institucional.',10)
+)
+insert into public.topics(subject_id,name,sort_order)
+select s.id,x.topic_name,x.sort_order
+from syllabus x join public.subjects s on s.name='CRP-05 | Conhecimentos Específicos — Agente Administrativo'
+on conflict (subject_id,name) do nothing;
+commit;
