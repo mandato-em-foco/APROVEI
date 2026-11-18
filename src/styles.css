@@ -3134,7 +3134,7 @@ r(--mint-dark); }
 .salary-pillars{display:grid;grid-template-columns:repeat(27,minmax(19px,1fr));gap:5px;align-items:end;min-height:190px;padding:16px 5px 0;overflow-x:auto}
 .salary-state{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:7px;min-width:19px;height:170px;padding:0 1px 5px;border:0;border-radius:8px;background:transparent;color:#304c5a;cursor:pointer}
 .salary-state.active{background:#edf4f5;outline:2px solid #526b78}
-.salary-value{max-width:54px;min-height:20px;overflow:hidden;color:#526872;font-size:8px;font-weight:900;white-space:nowrap;text-overflow:clip;writing-mode:vertical-rl;transform:rotate(180deg)}
+.salary-value{width:100%;min-height:20px;overflow:hidden;color:#526872;font-size:8px;font-weight:900;white-space:nowrap;text-align:center;text-overflow:clip}
 .salary-pillar-track{display:flex;align-items:flex-end;justify-content:center;width:100%;height:105px;border-radius:6px 6px 2px 2px;background:#edf1f3;overflow:hidden}
 .salary-pillar-track i{display:block;width:75%;min-height:4px;border-radius:5px 5px 1px 1px}
 .salary-state>b{font-size:10px}
