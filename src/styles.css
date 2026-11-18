@@ -3181,3 +3181,13 @@ r(--mint-dark); }
   .state-results-actions { align-items:flex-end; flex-direction:column; gap:7px; }
   .state-results-actions .national-clear { white-space:nowrap; }
 }
+
+
+/* Página individual de oportunidades por unidade federativa */
+.state-detail-page{display:grid;gap:20px;padding:clamp(16px,3vw,30px);border:2px solid #526b78;border-radius:22px;background:#fff;box-shadow:0 8px 22px rgba(27,48,61,.07)}
+.state-detail-header{display:grid;justify-items:start;gap:12px;padding:8px 2px 20px;border-bottom:1px solid #d5dfe3}
+.state-detail-header .eyebrow{margin-top:8px;color:#526b78;font-size:11px;font-weight:900;letter-spacing:.08em}
+.state-detail-header h2{margin:0;color:#173847;font:900 clamp(25px,4vw,36px)/1.15 'Manrope',sans-serif}
+.state-detail-header p{margin:0;color:#405966;font-size:14px;line-height:1.6}
+.state-detail-count{display:inline-flex;padding:9px 13px;border-radius:10px;background:#eaf3f5;color:#173847;font-size:13px}
+@media(max-width:600px){.state-detail-page{padding:15px;border-radius:16px}.state-detail-header h2{font-size:25px}.state-detail-page .national-contest-card{align-items:flex-start;flex-direction:column}.state-detail-page .national-card-links{flex-direction:row;flex-wrap:wrap}}
