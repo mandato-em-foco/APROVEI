@@ -188,8 +188,13 @@ export default function App() {
     supabase.auth.getSession().then(({ data }) => {
       setSession(data.session);
       if (data.session) {
-        setPage("dashboard");
+        const savedPage = window.sessionStorage.getItem("aprovei-current-page") as Page | null;
+        const studentPages: Page[] = ["dashboard", "contests", "planner", "videos", "progress"];
+        setPage(savedPage && studentPages.includes(savedPage) ? savedPage : "dashboard");
         void refresh(data.session.user.id);
+      } else {
+        window.sessionStorage.removeItem("aprovei-current-page");
+        setPage("landing");
       }
     });
 
@@ -204,6 +209,13 @@ export default function App() {
 
   function go(next: Page) {
     setPage(next);
+    if (typeof window !== "undefined") {
+      if (["dashboard", "contests", "planner", "videos", "progress"].includes(next)) {
+        window.sessionStorage.setItem("aprovei-current-page", next);
+      } else {
+        window.sessionStorage.removeItem("aprovei-current-page");
+      }
+    }
     setMobileMenu(false);
     setMessage("");
     setAuthMessage("");
@@ -212,7 +224,10 @@ export default function App() {
 
   function goToSection(id: string) {
     setMobileMenu(false);
-    if (page !== "landing") setPage("landing");
+    if (page !== "landing") {
+      setPage("landing");
+      window.sessionStorage.removeItem("aprovei-current-page");
+    }
     window.setTimeout(() => {
       document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
     }, 80);
