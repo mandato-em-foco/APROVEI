@@ -3155,3 +3155,8 @@ r(--mint-dark); }
 .national-empty{padding:20px;border:1px dashed #aab8bf;border-radius:13px;color:#526872;font-size:13px;line-height:1.6}
 @media(max-width:900px){.national-layout{grid-template-columns:1fr}.authorized-tile{min-height:220px}.salary-pillars{grid-template-columns:repeat(27,30px);justify-content:start}}
 @media(max-width:600px){.national-heading{align-items:flex-start;padding:18px 15px}.national-total{padding:10px 12px}.national-total strong{font-size:22px}.national-map-panel,.salary-panel,.authorized-list-panel,.state-results{padding:17px 13px}.national-panel-heading{align-items:flex-start}.national-panel-heading h3{font-size:18px}.national-panel-heading>small{max-width:120px}.national-map-wrap{min-height:230px}.brazil-svg{width:100%}.national-legend{gap:9px 12px}.authorized-tile{padding:21px;min-height:210px}.authorization-card,.national-contest-card{align-items:flex-start;flex-direction:column;padding:14px}.authorization-card .button{width:100%}.national-card-links{flex-direction:row;flex-wrap:wrap}.salary-pillars{min-height:175px}}
+
+.national-state-fallback{display:flex;flex-wrap:wrap;justify-content:center;gap:7px;max-width:480px;margin:12px auto 0}
+.national-state-fallback button{min-width:38px;padding:8px 6px;border:1px solid #aab8bf;border-radius:8px;background:#fff;color:#203c4d;font-size:11px;font-weight:900}
+.national-state-fallback button.active{background:#234657;color:#fff;border-color:#234657}
+.national-map-note a{color:#176c66;font-weight:800}
