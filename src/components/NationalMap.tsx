@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "../lib/supabase";
 import { MapPin, ChevronRight, ExternalLink, ShieldCheck, Search, X } from "lucide-react";
 
@@ -24,6 +24,24 @@ const regions: Record<string, { label: string; color: string }> = {
   ES:{label:"Sudeste",color:"#26977f"}, MG:{label:"Sudeste",color:"#26977f"}, RJ:{label:"Sudeste",color:"#26977f"}, SP:{label:"Sudeste",color:"#26977f"},
   PR:{label:"Sul",color:"#bd5571"}, RS:{label:"Sul",color:"#bd5571"}, SC:{label:"Sul",color:"#bd5571"}
 };
+const stateNameToUF: Record<string,string> = {
+  "acre":"AC","alagoas":"AL","amapa":"AP","amazonas":"AM","bahia":"BA","ceara":"CE",
+  "distrito federal":"DF","espirito santo":"ES","goias":"GO","maranhao":"MA",
+  "mato grosso":"MT","mato grosso do sul":"MS","minas gerais":"MG","para":"PA",
+  "paraiba":"PB","parana":"PR","pernambuco":"PE","piaui":"PI","rio de janeiro":"RJ",
+  "rio grande do norte":"RN","rio grande do sul":"RS","rondonia":"RO","roraima":"RR",
+  "santa catarina":"SC","sao paulo":"SP","sergipe":"SE","tocantins":"TO"
+};
+function normalizeStateName(value: unknown) {
+  return String(value || "").normalize("NFD").replace(/[\\u0300-\\u036f]/g,"").toLowerCase().trim();
+}
+function getUF(properties: any): string {
+  const raw = properties?.abbreviation || properties?.sigla || properties?.postal ||
+    properties?.state_code || properties?.UF || properties?.uf || properties?.code;
+  const code = String(raw || "").toUpperCase().trim();
+  if (regions[code]) return code;
+  return stateNameToUF[normalizeStateName(properties?.name || properties?.nome || properties?.state)] || "";
+}
 const money = (v: number) => v.toLocaleString("pt-BR",{style:"currency",currency:"BRL",maximumFractionDigits:0});
 const compactMoney = (v:number) => v >= 1000 ? "R$ "+(v/1000).toLocaleString("pt-BR",{maximumFractionDigits:1})+"k" : money(v);
 function coordsToPath(coords: any, project: (p:number[])=>[number,number]): string {
@@ -43,7 +61,7 @@ export default function NationalMap({ contests }: { contests: Contest[] }) {
   const [selected,setSelected]=useState("");
   const [showAuthorized,setShowAuthorized]=useState(false);
   const [authSearch,setAuthSearch]=useState("");
-  const [loading,setLoading]=useState(true);
+  const [loading,setLoading]=useState(true);\n  const resultsRef=useRef<HTMLElement|null>(null);
   useEffect(()=>{fetch(GEO_URL).then(r=>{if(!r.ok)throw new Error("Não foi possível carregar o mapa.");return r.json()}).then(setGeo).catch(()=>setGeoError("O mapa geográfico não carregou. A lista por estado continua disponível."));},[]);
   useEffect(()=>{let alive=true;(async()=>{if(!supabase){setLoading(false);return;}const {data,error}=await supabase.from("contest_authorizations").select("*").order("authorized_at",{ascending:false});if(alive){if(!error&&data)setAuthorizations(data as Authorization[]);setLoading(false);}})();return()=>{alive=false}},[]);
   const stateFeatures=geo?.features||[];
@@ -62,8 +80,8 @@ export default function NationalMap({ contests }: { contests: Contest[] }) {
         <div className="national-panel-heading"><div><span className="eyebrow">MAPA INTERATIVO</span><h3>Selecione um estado</h3></div><button className="national-clear" onClick={()=>setSelected("")}>Ver Brasil <X size={14}/></button></div>
         <div className="national-map-wrap">
           {geo ? <svg className="brazil-svg" viewBox="0 0 610 590" role="img" aria-label="Mapa interativo dos estados brasileiros">
-            {stateFeatures.map(feature=>{const uf=feature.properties.abbreviation;const active=selected===uf;return <path key={uf} d={geometryPath(feature.geometry,project)} fill={regions[uf]?.color||"#78909c"} className={active?"brazil-state selected":"brazil-state"} onClick={()=>setSelected(active?"":uf)} role="button" tabIndex={0} aria-label={feature.properties.name} onKeyDown={e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();setSelected(active?"":uf)}}}><title>{feature.properties.name}</title></path>})}
-            {stateFeatures.map(f=>{const p=project(centroid(f.geometry));return <text key={f.properties.abbreviation} x={p[0]} y={p[1]} className="brazil-label" pointerEvents="none">{f.properties.abbreviation}</text>})}
+            {stateFeatures.map(feature=>{const uf=getUF(feature.properties);const active=selected===uf;return <path key={uf||feature.properties.name} d={geometryPath(feature.geometry,project)} fill={regions[uf]?.color||"#78909c"} className={`brazil-state region-${regions[uf]?.label?.toLowerCase().replace("ô","o")||"unknown"}${active?" selected":""}`} onClick={()=>uf&&setSelected(active?"":uf)} role="button" tabIndex={0} aria-label={`${feature.properties.name}: ${contests.filter(c=>c.state===uf).length} concursos abertos`} onKeyDown={e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();setSelected(active?"":uf)}}}><title>{feature.properties.name}</title></path>})}
+            {stateFeatures.map(f=>{const p=project(centroid(f.geometry));const uf=getUF(f.properties);return <text key={uf||f.properties.name} x={p[0]} y={p[1]} className="brazil-label" pointerEvents="none">{uf}</text>})}
           </svg> : <div className="national-map-loading"><p>{geoError||"Carregando mapa do Brasil..."}</p><div className="national-state-fallback">{Object.keys(regions).sort().map(uf=><button key={uf} className={selected===uf?"active":""} onClick={()=>setSelected(selected===uf?"":uf)}>{uf}</button>)}</div></div>}
         </div>
         <div className="national-legend">{["Norte","Nordeste","Centro-Oeste","Sudeste","Sul"].map((r,i)=><span key={r}><i style={{background:["#2878a8","#d58a27","#6e58ae","#26977f","#bd5571"][i]}}/>{r}</span>)}</div>
@@ -79,7 +97,7 @@ export default function NationalMap({ contests }: { contests: Contest[] }) {
       <p className="national-map-note">A média considera apenas concursos com remuneração mínima ou máxima cadastrada. Estados sem dados salariais não recebem pilar estimado.</p>
     </section>
     {showAuthorized&&<section className="authorized-list-panel"><div className="national-panel-heading"><div><span className="eyebrow">EDITAIS AINDA NÃO PUBLICADOS</span><h3>Concursos com autorização oficial</h3></div><strong>{filteredAuthorizations.length} registros</strong></div><label className="authorized-search"><Search size={17}/><input value={authSearch} onChange={e=>setAuthSearch(e.target.value)} placeholder="Buscar órgão, cargo ou estado..."/></label>{loading?<p>Carregando autorizações...</p>:filteredAuthorizations.length?<div className="authorization-list">{filteredAuthorizations.map(a=><article className="authorization-card" key={a.id}><div><span className="authorization-state">{a.state||"Federal"}{a.city?" • "+a.city:""}</span><h4>{a.title}</h4><p>{a.agency}</p>{a.positions&&<p><b>Cargos:</b> {a.positions}</p>}<div className="authorization-meta">{a.vacancies!=null&&<span>{a.vacancies} vagas</span>}{(a.salary_min||a.salary_max)&&<span>{money(Number(a.salary_min||a.salary_max))}{a.salary_max&&a.salary_min&&a.salary_max!==a.salary_min?" a "+money(Number(a.salary_max)):""}</span>}<span>{a.status==="authorized"?"Autorizado":"Em preparação"}</span></div>{a.notes&&<small>{a.notes}</small>}</div>{a.source_url&&<a href={a.source_url} target="_blank" rel="noreferrer" className="button button-outline">Fonte oficial <ExternalLink size={14}/></a>}</article>)}</div>:<p className="national-empty">Nenhuma autorização cadastrada para este filtro. A lista será alimentada com atos e fontes oficiais.</p>}</section>}
-    <section className="state-results"><div className="national-panel-heading"><div><span className="eyebrow">{selected?"ESTADO SELECIONADO":"VISÃO NACIONAL"}</span><h3>{selected?selectedName:"Editais publicados e oportunidades"}</h3></div><strong>{stateContests.length} concursos</strong></div>{stateContests.length?<div className="national-contest-list">{stateContests.map(c=><article className="national-contest-card" key={c.id}><div><span className="authorization-state">{c.state||"Federal"}{c.city?" • "+c.city:""}</span><h4>{c.title}</h4><div className="authorization-meta">{c.employment_type==="temporary"&&<span>Processo seletivo temporário</span>}{c.employment_type==="public_enterprise"&&<span>Empresa pública</span>}{c.level&&<span>{c.level}</span>}{c.vacancies!=null&&<span>{c.vacancies} vagas</span>}{(c.salary_min||c.salary_max)&&<span>{money(Number(c.salary_min||c.salary_max))}{c.salary_max&&c.salary_min&&c.salary_max!==c.salary_min?" a "+money(Number(c.salary_max)):""}</span>}{c.deadline&&<span>Inscrições até {new Date(c.deadline+"T12:00:00").toLocaleDateString("pt-BR")}</span>}</div></div><div className="national-card-links">{c.registration_url&&<a href={c.registration_url} target="_blank" rel="noreferrer">Inscrição <ExternalLink size={13}/></a>}{c.official_url&&<a href={c.official_url} target="_blank" rel="noreferrer">Edital oficial <ExternalLink size={13}/></a>}{c.source_url&&<a href={c.source_url} target="_blank" rel="noreferrer">Fonte consultada <ExternalLink size={13}/></a>}</div></article>)}</div>:<p className="national-empty">Nenhum edital publicado cadastrado {selected?"para "+selectedName:"neste momento"}. Os registros nacionais serão adicionados à medida que forem verificados.</p>}</section>
+    <section className="state-results" ref={resultsRef}><div className="national-panel-heading"><div><span className="eyebrow">{selected?"ESTADO SELECIONADO":"VISÃO NACIONAL"}</span><h3>{selected?`Concursos abertos em ${selectedName}`:"Editais publicados e oportunidades"}</h3></div><div className="state-results-actions">{selected&&<button className="national-clear" onClick={()=>setSelected("")}>Voltar ao mapa <MapPin size={14}/></button>}<strong>{stateContests.length} concursos</strong></div></div>{stateContests.length?<div className="national-contest-list">{stateContests.map(c=><article className="national-contest-card" key={c.id}><div><span className="authorization-state">{c.state||"Federal"}{c.city?" • "+c.city:""}</span><h4>{c.title}</h4><div className="authorization-meta">{c.employment_type==="temporary"&&<span>Processo seletivo temporário</span>}{c.employment_type==="public_enterprise"&&<span>Empresa pública</span>}{c.level&&<span>{c.level}</span>}{c.vacancies!=null&&<span>{c.vacancies} vagas</span>}{(c.salary_min||c.salary_max)&&<span>{money(Number(c.salary_min||c.salary_max))}{c.salary_max&&c.salary_min&&c.salary_max!==c.salary_min?" a "+money(Number(c.salary_max)):""}</span>}{c.deadline&&<span>Inscrições até {new Date(c.deadline+"T12:00:00").toLocaleDateString("pt-BR")}</span>}</div></div><div className="national-card-links">{c.registration_url&&<a href={c.registration_url} target="_blank" rel="noreferrer">Inscrição <ExternalLink size={13}/></a>}{c.official_url&&<a href={c.official_url} target="_blank" rel="noreferrer">Edital oficial <ExternalLink size={13}/></a>}{c.source_url&&<a href={c.source_url} target="_blank" rel="noreferrer">Fonte consultada <ExternalLink size={13}/></a>}</div></article>)}</div>:<p className="national-empty">Nenhum edital publicado cadastrado {selected?"para "+selectedName:"neste momento"}. Os registros nacionais serão adicionados à medida que forem verificados.</p>}</section>
   </section>;
 }
 function centroid(g:any):number[]{let pts:number[][]=[];const walk=(v:any)=>{if(Array.isArray(v)&&typeof v[0]==="number")pts.push(v);else if(Array.isArray(v))v.forEach(walk)};walk(g?.coordinates||[]);if(!pts.length)return [-50,-15];return [pts.reduce((s,p)=>s+p[0],0)/pts.length,pts.reduce((s,p)=>s+p[1],0)/pts.length];}
