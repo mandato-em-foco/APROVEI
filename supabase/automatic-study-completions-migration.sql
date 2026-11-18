@@ -10,6 +10,10 @@ drop policy if exists "Users manage own study completions"
 drop policy if exists "Users read own study completions"
   on public.study_plan_item_completions;
 
+-- Os registros anteriores dependiam de marcação manual e não são confiáveis.
+-- Reinicia as conclusões para que, daqui em diante, só o gatilho automático registre.
+delete from public.study_plan_item_completions;
+
 create policy "Users read own study completions"
   on public.study_plan_item_completions
   for select
