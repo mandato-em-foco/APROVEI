@@ -19,7 +19,7 @@ type Subject = { id: string; name: string };
 type ContestPosition = { id: string; contest_id: string; title: string; vacancies: number | null; level: string | null; salary_min: number | null; salary_max: number | null; notes: string | null };
 type SubjectMapping = { subject_id: string; priority: number | null; suggested_weekly_minutes: number | null };
 type SavedPlanItem = { id: string; plan_id: string; subject_id: string; weekday: number; duration_minutes: number; sort_order: number };
-type SavedPlan = { id: string; title: string; mode: "automatic" | "student"; created_at: string; daily_goal_minutes: number; weekly_goal_minutes: number; is_active: boolean; items: SavedPlanItem[] };
+type SavedPlan = { id: string; title: string; mode: "automatic" | "student"; created_at: string; daily_goal_minutes: number; weekly_goal_minutes: number; is_active: boolean; contest_id: string | null; position_id: string | null; items: SavedPlanItem[] };
 
 type Props = {
   contests: Contest[];
@@ -58,6 +58,7 @@ export default function Planner({ contests, subjects, userId, completionRefreshK
   const [loadingPlans, setLoadingPlans] = useState(true);
   const [expandedPlanId, setExpandedPlanId] = useState<string | null>(null);
   const [completedItemIds, setCompletedItemIds] = useState<string[]>([]);
+  const [editingPlanId, setEditingPlanId] = useState<string | null>(null);
 
   const today = new Date();
   const todayWeekday = today.getDay();
@@ -68,7 +69,7 @@ export default function Planner({ contests, subjects, userId, completionRefreshK
     if (!supabase) { setLoadingPlans(false); return; }
     setLoadingPlans(true);
     const { data: plans, error } = await supabase.from("study_plans")
-      .select("id,title,mode,created_at,daily_goal_minutes,weekly_goal_minutes,is_active")
+      .select("id,title,mode,created_at,daily_goal_minutes,weekly_goal_minutes,is_active,contest_id,position_id")
       .eq("user_id", userId).order("created_at", { ascending: false });
     if (error || !plans?.length) { setSavedPlans([]); setLoadingPlans(false); return; }
     const ids = plans.map(plan => plan.id);
@@ -196,8 +197,33 @@ export default function Planner({ contests, subjects, userId, completionRefreshK
 
   function reset() {
     setMode(null);
+    setEditingPlanId(null);
     setNotice("");
     setSuccess(false);
+    setContestId("");
+    setPositionId("");
+    setSubjectMappings([]);
+    setSelectedSubjects([]);
+  }
+
+  function beginEdit(plan: SavedPlan) {
+    const uniqueDays = Array.from(new Set(plan.items.map(item => item.weekday)));
+    const uniqueSubjects = Array.from(new Set(plan.items.map(item => item.subject_id)));
+    setEditingPlanId(plan.id);
+    setMode(plan.mode);
+    setTitle(plan.title);
+    setContestId(plan.contest_id || "");
+    setPositionId(plan.position_id || "");
+    setDays(uniqueDays.length ? uniqueDays : [1, 2, 3, 4, 5]);
+    setHours(String(Math.max(0.25, plan.daily_goal_minutes / 60)));
+    setSessionMinutes(String(plan.items[0]?.duration_minutes || 60));
+    setSelectedSubjects(uniqueSubjects);
+    setNotice("");
+    setSuccess(false);
+    setExpandedPlanId(plan.id);
+    window.setTimeout(() => {
+      document.querySelector(".ap-planner-form")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 80);
   }
 
   async function createPlan(event: FormEvent<HTMLFormElement>) {
@@ -361,9 +387,26 @@ export default function Planner({ contests, subjects, userId, completionRefreshK
       return;
     }
 
+    if (editingPlanId) {
+      const { error: archiveError } = await supabase
+        .from("study_plans")
+        .update({ is_active: false })
+        .eq("id", editingPlanId)
+        .eq("user_id", userId);
+      if (archiveError) {
+        setSaving(false);
+        setNotice("A nova versão foi salva, mas não foi possível arquivar a anterior: " + archiveError.message);
+        await loadSavedPlans();
+        return;
+      }
+    }
+
     setSaving(false);
     setSuccess(true);
-    setNotice("Planejamento salvo com sucesso!");
+    setNotice(editingPlanId
+      ? "Planejamento atualizado! A versão anterior foi preservada no histórico."
+      : "Planejamento salvo com sucesso!");
+    setEditingPlanId(null);
     await loadSavedPlans();
     setExpandedPlanId(plan.id);
   }
@@ -427,6 +470,11 @@ export default function Planner({ contests, subjects, userId, completionRefreshK
                       </div></div>;
                     })}
                     {!plan.items.length && <p>Este planejamento ainda não possui sessões.</p>}
+                    <div className="ap-saved-actions">
+                      <button type="button" className="button button-outline" onClick={() => beginEdit(plan)}>
+                        <PencilLine size={16} /> Editar planejamento
+                      </button>
+                    </div>
                   </div>}
                 </article>;
               })}
@@ -510,7 +558,7 @@ export default function Planner({ contests, subjects, userId, completionRefreshK
       ) : (
         <form className="student-panel ap-planner-form" onSubmit={createPlan}>
           <button type="button" className="ap-back-button" onClick={reset}>
-            <ArrowLeft size={16} /> Voltar às opções
+            <ArrowLeft size={16} /> {editingPlanId ? "Cancelar edição" : "Voltar às opções"}
           </button>
 
           <span className="eyebrow">
@@ -701,7 +749,7 @@ export default function Planner({ contests, subjects, userId, completionRefreshK
             {saving ? (
               <><LoaderCircle className="ap-spin" size={17} /> Salvando...</>
             ) : (
-              <><CalendarDays size={17} /> Salvar meu planejamento</>
+              <><CalendarDays size={17} /> {editingPlanId ? "Salvar alterações" : "Salvar meu planejamento"}</>
             )}
           </button>
 
