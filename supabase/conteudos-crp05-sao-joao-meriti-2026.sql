@@ -180,7 +180,7 @@ with syllabus(subject_name,topic_name,sort_order) as (values
 ('São João de Meriti | Legislação Educacional','Proteção contra violência nas escolas — Lei nº 14.811/2024.',10),
 ('São João de Meriti | Legislação Educacional','Computação na Educação Básica — Resolução CNE/CEB nº 1/2022.',11),
 ('São João de Meriti | Conhecimentos Gerais do Município','Origem da região, primeiras ocupações, povoamento e evolução histórica e administrativa.',1),
-('São João de Meriti | Conhecimentos Gerais do Município','Aspectos físicos e geográficos: clima, relevo, população, localização, área, limites, distritos e características urbanas.',2),
+('São João de Meriti | Conhecimentos Gerais do Município','Aspectos físicos e geográficos: clima, relevo, população, localização e limites do município.',2),
 ('São João de Meriti | Conhecimentos Gerais do Município','Atividades econômicas, patrimônio natural, cultural, histórico e arquitetônico; turismo, lazer e datas comemorativas.',3),
 ('São João de Meriti | Conhecimentos Gerais do Município','Personalidades, indicadores sociais, econômicos, educacionais e financeiros.',4),
 ('São João de Meriti | Conhecimentos Gerais do Município','Serviços municipais, estrutura administrativa da Prefeitura e relação regional com municípios vizinhos.',5),
