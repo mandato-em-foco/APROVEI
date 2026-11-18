@@ -3068,3 +3068,12 @@ r(--mint-dark); }
   .ap-subject-performance-label span { text-align: left; white-space: normal; }
 }
 
+
+
+/* Evolução do aluno por assunto do edital */
+.ap-topic-performance{display:grid;gap:16px;margin:0 0 24px;padding:24px;border:2px solid #526b78;border-radius:22px;background:#fff;box-shadow:0 8px 22px rgba(27,48,61,.08)}
+.ap-topic-performance-label{display:grid;gap:4px}
+.ap-topic-performance-label strong{color:#203c4d;font-size:13px;line-height:1.55}
+.ap-topic-performance-label span{color:#526872;font-size:11px;line-height:1.5}
+.ap-topic-help{display:block;margin-top:5px;color:#526872;font-size:11px;line-height:1.5}
+@media(max-width:600px){.ap-topic-performance{padding:19px 15px;gap:14px}}
