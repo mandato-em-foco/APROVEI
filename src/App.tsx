@@ -840,7 +840,9 @@ export default function App() {
                   {filteredContests.map(contest => (
                     <article className="contest-card" key={contest.id}>
                       <span className="contest-status">
-                        {contest.status === "open" ? "Inscrições abertas" : "Em breve"}
+                        {contest.deadline && new Date(contest.deadline + "T23:59:59") < new Date()
+                          ? "Inscrições encerradas"
+                          : contest.status === "open" ? "Inscrições abertas" : "Edital publicado"}
                       </span>
                       <h3>{contest.title}</h3>
                       <p>
