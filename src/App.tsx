@@ -783,72 +783,91 @@ export default function App() {
             </section>
           )}
 
-          {page === "planner" && (
-            <section>
-              <PageHeading
-                eyebrow="ROTINA E CONSTÂNCIA"
-                title="Planejamento de estudos"
-                subtitle="Registre seu tempo de dedicação e mantenha seu histórico organizado."
-              />
+          
+{page === "planner" && (
+  <section>
+    <PageHeading
+      eyebrow="ROTINA E CONSTÂNCIA"
+      title="Planejamento de estudos"
+      subtitle="Escolha como deseja organizar sua preparação e construa sua rotina rumo à aprovação."
+    />
 
-              <div className="planner-layout">
-                <form className="student-panel study-form" onSubmit={addStudySession}>
-                  <span className="eyebrow">NOVA SESSÃO</span>
-                  <h2>Registrar estudo</h2>
+    <Planner
+      contests={contests}
+      subjects={subjects}
+      userId={session.user.id}
+    />
 
-                  <label>
-                    Disciplina
-                    <select
-                      value={subjectId}
-                      onChange={event => setSubjectId(event.target.value)}
-                    >
-                      <option value="">Estudo livre / não selecionada</option>
-                      {subjects.map(subject => (
-                        <option key={subject.id} value={subject.id}>{subject.name}</option>
-                      ))}
-                    </select>
-                  </label>
+    <div className="planner-session-area">
+      <div className="page-heading">
+        <span className="eyebrow">ACOMPANHAMENTO DIÁRIO</span>
+        <h2>Registrar sessão de estudo</h2>
+        <p>Registre o tempo que você realmente dedicou aos estudos e acompanhe sua evolução.</p>
+      </div>
 
-                  <label>
-                    Tempo dedicado (minutos)
-                    <input
-                      type="number"
-                      min="1"
-                      max="1440"
-                      value={minutes}
-                      onChange={event => setMinutes(event.target.value)}
-                    />
-                  </label>
+      <div className="planner-layout">
+        <form className="student-panel study-form" onSubmit={addStudySession}>
+          <span className="eyebrow">NOVA SESSÃO</span>
+          <h2>Registrar estudo</h2>
 
-                  <label>
-                    Observações
-                    <textarea
-                      rows={3}
-                      value={notes}
-                      onChange={event => setNotes(event.target.value)}
-                      placeholder="O que você estudou hoje?"
-                    />
-                  </label>
+          <label>
+            Disciplina
+            <select
+              value={subjectId}
+              onChange={event => setSubjectId(event.target.value)}
+            >
+              <option value="">Estudo livre / não selecionada</option>
+              {subjects.map(subject => (
+                <option key={subject.id} value={subject.id}>
+                  {subject.name}
+                </option>
+              ))}
+            </select>
+          </label>
 
-                  <button className="button button-primary" type="submit">
-                    <CheckCircle2 size={17} /> Salvar sessão
-                  </button>
+          <label>
+            Tempo dedicado (minutos)
+            <input
+              type="number"
+              min="1"
+              max="1440"
+              value={minutes}
+              onChange={event => setMinutes(event.target.value)}
+            />
+          </label>
 
-                  {message && <p className="form-message" role="status">{message}</p>}
-                </form>
+          <label>
+            Observações
+            <textarea
+              rows={3}
+              value={notes}
+              onChange={event => setNotes(event.target.value)}
+              placeholder="O que você estudou hoje?"
+            />
+          </label>
 
-                <section className="student-panel planner-tip">
-                  <span className="welcome-icon"><Target /></span>
-                  <span className="eyebrow">DICA DE ESTUDO</span>
-                  <h2>Foco na regularidade.</h2>
-                  <p>
-                    Uma rotina sustentável é mais eficiente do que estudar muitas horas em um único dia e abandonar o planejamento depois.
-                  </p>
-                </section>
-              </div>
-            </section>
+          <button className="button button-primary" type="submit">
+            <CheckCircle2 size={17} /> Salvar sessão
+          </button>
+
+          {message && (
+            <p className="form-message" role="status">{message}</p>
           )}
+        </form>
 
+        <section className="student-panel planner-tip">
+          <span className="welcome-icon"><Target /></span>
+          <span className="eyebrow">DICA DE ESTUDO</span>
+          <h2>Foco na regularidade.</h2>
+          <p>
+            Uma rotina sustentável é mais eficiente do que estudar muitas horas em um único dia e abandonar o planejamento depois.
+          </p>
+        </section>
+      </div>
+    </div>
+  </section>
+)}
+          
           {page === "videos" && (
             <section>
               <PageHeading
