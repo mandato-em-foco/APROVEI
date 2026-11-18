@@ -4,6 +4,10 @@
 
 begin;
 
+alter table public.contests
+  add column if not exists employment_type text not null default 'permanent'
+  check (employment_type in ('permanent','temporary','public_enterprise'));
+
 create table if not exists public.contest_authorizations (
   id uuid primary key default gen_random_uuid(),
   title text not null,
