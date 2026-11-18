@@ -3,7 +3,7 @@ import { supabase } from "../lib/supabase";
 import { MapPin, ChevronRight, ExternalLink, ShieldCheck, Search, X } from "lucide-react";
 
 type Contest = {
-  id: string; title: string; state: string | null; city: string | null;
+  id: string; title: string; sphere: string; state: string | null; city: string | null;
   level: string | null; status: string; deadline: string | null;
   official_url: string | null; registration_url: string | null;
   vacancies: number | null; salary_min: number | null; salary_max: number | null;
@@ -47,8 +47,8 @@ export default function NationalMap({ contests }: { contests: Contest[] }) {
   useEffect(()=>{let alive=true;(async()=>{if(!supabase){setLoading(false);return;}const {data,error}=await supabase.from("contest_authorizations").select("*").order("authorized_at",{ascending:false});if(alive){if(!error&&data)setAuthorizations(data as Authorization[]);setLoading(false);}})();return()=>{alive=false}},[]);
   const stateFeatures=geo?.features||[];
   const selectedName=stateFeatures.find(f=>f.properties.abbreviation===selected)?.properties.name||selected;
-  const stateContests=contests.filter(c=>selected?c.state===selected:true);
-  const stateAuthorizations=authorizations.filter(a=>selected?a.state===selected:true);
+  const stateContests=contests.filter(c=>selected?(c.state===selected||c.sphere==="federal"):true);
+  const stateAuthorizations=authorizations.filter(a=>selected?(a.state===selected||a.sphere==="federal"):true);
   const averages=useMemo(()=>Object.keys(regions).map(uf=>{const rows=contests.filter(c=>c.state===uf&&(c.salary_min||c.salary_max));const vals=rows.map(c=>((Number(c.salary_min)||Number(c.salary_max)||0)+(Number(c.salary_max)||Number(c.salary_min)||0))/2);return {uf,avg:vals.length?vals.reduce((s,v)=>s+v,0)/vals.length:0,count:rows.length}}),[contests]);
   const maxAverage=Math.max(1,...averages.map(x=>x.avg));
   const filteredAuthorizations=stateAuthorizations.filter(a=>[a.title,a.agency,a.positions||"",a.city||"",a.state||""].join(" ").toLowerCase().includes(authSearch.toLowerCase()));
