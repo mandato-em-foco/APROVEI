@@ -148,6 +148,7 @@ export default function App() {
   const [minutes, setMinutes] = useState("60");
   const [notes, setNotes] = useState("");
   const [message, setMessage] = useState("");
+  const [completionRefreshKey, setCompletionRefreshKey] = useState(0);
 
   async function refresh(userId?: string) {
     if (!supabase) return;
@@ -283,8 +284,9 @@ export default function App() {
       return;
     }
 
-    setMessage("Sessão registrada com sucesso!");
+    setMessage("Sessão registrada! O APROVEI atualizou automaticamente seu planejamento, quando houve correspondência de matéria e dia.");
     setNotes("");
+    setCompletionRefreshKey(current => current + 1);
     await refresh(session.user.id);
   }
 
@@ -849,6 +851,7 @@ export default function App() {
       contests={contests}
       subjects={subjects}
       userId={session.user.id}
+      completionRefreshKey={completionRefreshKey}
     />
 
     <div className="planner-session-area">
